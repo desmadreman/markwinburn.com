@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Winburn — Slomad</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
+
+    <meta name="description" content="Mark Winburn is a semi-retired business executive on sabbatical, slowly exploring the world in Slomad Mode.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://markwinburn.com/">
+    <meta property="og:title" content="Mark Winburn — Slomad">
+    <meta property="og:description" content="Mark Winburn is a semi-retired business executive on sabbatical, slowly exploring the world in Slomad Mode.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style id="main-styles">
+        /* CSS Variables */
+        :root {
+            --darker: #0a0a0f;
+            --dark: #13131a;
+            --gray: #1a1a24;
+            --light: #e0e0e8;
+            --cyan: #00ffff;
+            --magenta: #ff00ff;
+            --bg-light: #f5f5f7;
+            --cyan-light: #0077aa;
+            --magenta-light: #bb0088;
+            --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000000' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H2V1z'%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        [data-theme="light"] {
+            --darker: #f5f5f7;
+            --dark: #ffffff;
+            --gray: #e8e8ed;
+            --light: #1a1a1f;
+            --cyan: var(--cyan-light);
+            --magenta: var(--magenta-light);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: var(--darker);
+            color: var(--light);
+            overflow-x: hidden;
+            transition: background 0.3s ease;
+        }
+
+        [data-theme="light"] body { background-image: var(--texture); }
+
+        /* Page loader - Set to exactly 1s animation */
+        .page-loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0a0a0f;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .page-loader.hidden { opacity: 0; visibility: hidden; }
+        .loader-text { font-family: 'Silkscreen', cursive; font-size: 2rem; color: var(--cyan); animation: loaderPulse 0.5s infinite; }
+        .loader-bar { width: 200px; height: 4px; background: #1a1a24; margin-top: 1.5rem; position: relative; overflow: hidden; }
+        .loader-bar::after { content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 0; background: linear-gradient(90deg, var(--cyan), var(--magenta)); animation: loadProgress 1s linear forwards; }
+
+        @keyframes loaderPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes loadProgress { 0% { width: 0; } 100% { width: 100%; } }
+
+        /* Navigation */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 1rem;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000; background: rgba(10, 10, 15, 0.8); backdrop-filter: blur(10px);
+        }
+        [data-theme="light"] nav { background: rgba(245, 245, 247, 0.8); }
+        .logo { font-family: 'Silkscreen', cursive; font-size: 0.8rem; color: var(--cyan); text-decoration: none; flex-shrink: 0; margin-right: 1rem; }
+        
+        .nav-links { 
+            display: flex; 
+            gap: 1.25rem; 
+            align-items: center; 
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-links::-webkit-scrollbar { display: none; }
+
+        .nav-links a { font-family: 'Silkscreen', cursive; font-size: 0.65rem; color: var(--light); text-decoration: none; transition: 0.3s; white-space: nowrap; }
+        .nav-links a:hover { color: var(--cyan); }
+
+        .theme-toggle {
+            font-family: 'Silkscreen', cursive; font-size: 0.65rem;
+            background: none; border: 1px solid var(--cyan); color: var(--cyan);
+            padding: 0.4rem 0.8rem; cursor: pointer; transition: 0.3s; flex-shrink: 0;
+        }
+        .theme-toggle:hover { background: var(--cyan); color: var(--darker); }
+
+        /* Scroll To Top */
+        .scroll-top {
+            position: fixed; bottom: 2rem; right: 2rem;
+            width: 45px; height: 45px;
+            background: var(--cyan); border: none; color: var(--darker);
+            font-family: 'Silkscreen'; cursor: pointer;
+            display: none; align-items: center; justify-content: center;
+            z-index: 999; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            transition: 0.3s;
+        }
+        .scroll-top.visible { display: flex; }
+
+        /* Hero & Content */
+        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 5rem 1rem 2rem; }
+        .hero-content { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; max-width: 1400px; width: 100%; align-items: center; }
+        h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.5rem, 8vw, 6rem); font-weight: 800; line-height: 1; margin-bottom: 1.5rem; background: linear-gradient(135deg, var(--light) 0%, var(--cyan) 50%, var(--magenta) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .headshot-container { position: relative; width: 100%; max-width: 450px; aspect-ratio: 1; border: 4px solid var(--cyan); overflow: hidden; margin: 0 auto; }
+        .headshot { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: 0.5s; }
+        .headshot-container:hover .headshot { filter: grayscale(0%); }
+
+        /* Standardized padding */
+        .bio { padding: 2rem 1rem; }
+        .bio-text { opacity: 0; transform: translateY(30px); transition: 0.6s; max-width: 800px; margin: 0 auto; line-height: 1.8; font-size: 1.1rem; }
+        .bio-text.visible { opacity: 1; transform: translateY(0); }
+
+        /* Instagram Feed Section - Matching padding */
+        #social-feed {
+            padding: 2rem 1rem;
+            border-top: 1px solid var(--gray);
+        }
+
+        .bio-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0;
+            text-align: center;
+        }
+
+        #social-feed h2 {
+            font-family: 'Silkscreen';
+            color: var(--magenta);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        .feed-container {
+            border: 1px solid var(--cyan);
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        /* Ensure Behold widget displays properly */
+        behold-widget {
+            display: block;
+            width: 100%;
+            min-height: 400px;
+        }
+
+        footer {
+            padding: 2rem 1rem;
+            text-align: center;
+            border-top: 1px solid var(--gray);
+            font-size: 0.7rem;
+            color: #666;
+            letter-spacing: 1px;
+        }
+        .geocities-toggle {
+            background: none; border: none; cursor: pointer; font-size: 1.2rem; margin-top: 10px; opacity: 0.4;
+        }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); z-index: 3000;
+            align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--gray); border: 2px solid var(--cyan); padding: 2.5rem; max-width: 500px; width: 90%; color: var(--light); }
+        .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; background: var(--darker); border: 1px solid var(--cyan); color: var(--light); font-family: 'Space Mono'; margin-bottom: 1rem; }
+        .submit-btn { width: 100%; padding: 1rem; background: var(--cyan); border: none; font-family: 'Silkscreen'; cursor: pointer; font-weight: bold; color: var(--darker); }
+
+        @media (max-width: 968px) { 
+            .hero-content { grid-template-columns: 1fr; text-align: center; } 
+            .hero-image { order: -1; }
+            nav { padding: 0.75rem; }
+            .bio { padding: 2rem 1rem; }
+            #social-feed { padding: 2rem 1rem; }
+        }
+    </style>
+
+    <style id="geocities-styles">
+        /* This content is only "enabled" via JS adding a class to the body */
+        body.geo-mode { 
+            background: #0000ff !important; 
+            background-image: url('https://web.archive.org/web/20091027083113im_/http://geocities.com/Heartland/7134/Backgrounds/stars.gif') !important;
+            font-family: "Comic Sans MS", "Comic Sans", cursive !important;
+            color: #00ff00 !important;
+        }
+        body.geo-mode h1 {
+            background: none !important;
+            -webkit-text-fill-color: yellow !important;
+            text-shadow: 3px 3px red !important;
+            animation: geoblink 0.5s step-end infinite !important;
+        }
+        body.geo-mode nav, body.geo-mode footer, body.geo-mode .modal-content {
+            background: #ff00ff !important;
+            border: 5px outset #00ffff !important;
+        }
+        @keyframes geoblink { 50% { visibility: hidden; } }
+        .netscape-badge {
+            display: inline-block; border: 2px solid white; padding: 5px; background: #000; color: white; font-size: 10px; margin-top: 10px;
+        }
+        body.geo-mode #social-feed {
+            background: url('https://web.archive.org/web/20091024015112/http://geocities.com/Athens/Acropolis/3763/stars.gif') !important;
+        }
+        body.geo-mode .feed-container {
+            border: 10px outset #00ffff !important;
+            background: #000080 !important;
+        }
+        body.geo-mode #social-feed h2 span {
+            color: yellow !important;
+            text-shadow: 2px 2px red !important;
+            font-size: 1.5rem !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-loader" id="loader">
+        <div class="loader-content">
+            <div class="loader-text">MW_</div>
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+
+    <button class="scroll-top" id="scrollTop" onclick="window.scrollTo(0,0)"></button>
+
+    <nav>
+        <a href="#" class="logo">markwinburn.com</a>
+        <div class="nav-links">
+            <a href="#bio">■ ABOUT</a>
+            <a href="https://www.threads.net/@mvw_000" target="_blank">■ THREADS</a>
+            <a href="https://www.instagram.com/mvw_000" target="_blank">■ INSTAGRAM</a>
+            <a href="https://www.linkedin.com/in/markwinburn" target="_blank">■ LINKEDIN</a>
+            <a href="javascript:void(0)" onclick="toggleContact(true)">■ CONTACT</a>
+            <button class="theme-toggle" id="theme-toggle">
+                <span class="theme-toggle-text">LIGHT</span>
+            </button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <span class="hero-label">ON SABBATICAL</span>
+                <h1>Mark Winburn</h1>
+                <p class="hero-subtitle">Exploring the world in Slomad Mode.</p>
+            </div>
+            <div class="hero-image">
+                <div class="headshot-container">
+                    <img src="headshot.jpeg" alt="Mark Winburn" class="headshot">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="bio" class="bio">
+        <div class="bio-text">
+            <p>Recovering software developer. Semi-retired senior executive with experience in all levels of the IT software industry for over 30 years. Currently touring the globe, seeing old friends, making new ones, and making sure to take in the sights as a proper "slowmad".</p>
+        </div>
+    </section>
+
+    <section id="social-feed">
+        <div class="bio-content">
+            <h2>
+                <span class="glitch" data-text="LATEST_INSTAGRAM_LOG">LATEST_INSTAGRAM_LOG</span>
+            </h2>
+            
+            <div class="feed-container">
+                <behold-widget feed-id="CvxB3JmFYgr7l34XVTZJ"></behold-widget>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>MADE WITH HELP FROM CLAUDE CODE AND DEBUGGED BY GEMINI.</p>
+        <button class="geocities-toggle" onclick="toggleGeocities()" title="Toggle Under Construction Mode">🚧</button>
+        <div id="netscape" style="display:none">
+            <div class="netscape-badge">BEST VIEWED IN NETSCAPE NAVIGATOR 4.0</div>
+        </div>
+    </footer>
+
+    <div id="contactOverlay" class="modal">
+        <div class="modal-content">
+            <h2 style="font-family: 'Syne'; margin-bottom: 1rem;">Send a Message</h2>
+            <form id="contactForm" action="https://formspree.io/f/xpqqzapa" method="POST">
+                <div class="form-group"><input type="text" name="name" placeholder="Name" required></div>
+                <div class="form-group"><input type="email" name="email" placeholder="Email" required></div>
+                <div class="form-group"><textarea name="message" placeholder="Message" required style="height:100px;"></textarea></div>
+                <button type="submit" class="submit-btn">SEND MESSAGE</button>
+            </form>
+            <button onclick="toggleContact(false)" style="background:none; border:none; color:var(--magenta); cursor:pointer; margin-top:1rem; font-family:'Silkscreen'">[ CLOSE ]</button>
+        </div>
+    </div>
+
+    <!-- Load Behold widget script -->
+    <script type="module" src="https://w.behold.so/widget.js"></script>
+
+    <script>
+        // 1. Strict 1-Second Loader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1000);
+        });
+
+        // 2. Theme Management (System Settings)
+        const themeBtn = document.getElementById('theme-toggle');
+        const toggleText = document.querySelector('.theme-toggle-text');
+        
+        function applyTheme(isLight) {
+            if (isLight) {
+                document.documentElement.setAttribute('data-theme', 'light');
+                toggleText.textContent = 'DARK';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                toggleText.textContent = 'LIGHT';
+            }
+        }
+
+        const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        applyTheme(systemPrefersLight);
+
+        themeBtn.addEventListener('click', () => {
+            const isNowLight = document.documentElement.getAttribute('data-theme') !== 'light';
+            applyTheme(isNowLight);
+        });
+
+        // 3. Geocities Toggle (Off by default)
+        function toggleGeocities() {
+            document.body.classList.toggle('geo-mode');
+            const netscape = document.getElementById('netscape');
+            netscape.style.display = document.body.classList.contains('geo-mode') ? 'block' : 'none';
+        }
+
+        // 4. Scroll & UI Logic
+        const scrollTopBtn = document.getElementById('scrollTop');
+        window.onscroll = () => {
+            if (window.scrollY > 300) scrollTopBtn.classList.add('visible');
+            else scrollTopBtn.classList.remove('visible');
+        };
+
+        function toggleContact(show) {
+            document.getElementById('contactOverlay').classList.toggle('active', show);
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.bio-text').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
