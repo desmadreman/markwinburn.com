@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wordie - The Full Word Game</title>
+    <title>Wordie - Unlimited Dynamic Word Game</title>
     <style>
         :root {
             --color-correct: #538d4e;
@@ -65,19 +65,13 @@
         .diff-medium { color: #ffeb3b; }
         .diff-hard { color: #f44336; }
 
-        @media (max-height: 720px) {
-            #grid { height: 340px; width: 280px; margin-bottom: 12px; }
-            .key { height: 48px; font-size: 0.95rem; }
-            h1 { font-size: 1.8rem; }
-        }
-
-        /* Subtle, lowercase home link styling */
+        /* Lowercase home link styling */
         .home-link {
             position: absolute;
             left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            color: #818384; /* Matches key background gray */
+            color: #818384;
             text-decoration: none;
             font-size: 0.95rem;
             font-weight: 500;
@@ -86,7 +80,7 @@
 
         .home-link:hover {
             text-decoration: underline;
-            color: #ffffff; /* Brightens on hover */
+            color: #ffffff;
         }
 
         #game-container {
@@ -272,6 +266,12 @@
             0%, 100% { opacity: 0; transform: translateY(-10px); }
             15%, 85% { opacity: 1; transform: translateY(0); }
         }
+
+        @media (max-height: 720px) {
+            #grid { height: 340px; width: 280px; margin-bottom: 12px; }
+            .key { height: 48px; font-size: 0.95rem; }
+            h1 { font-size: 1.8rem; }
+        }
     </style>
 </head>
 <body>
@@ -304,18 +304,18 @@
     </div>
 
     <script>
+        // Difficulty labels mapped to the day of the week
         const WEEKLY_WORDS = {
-            0: { name: "Extreme Sunday", class: "diff-hard", words: ["PHLEM", "XYLYL", "ZILCH", "SNOUT", "FJORD", "QUIRK", "GAVEL", "GUANO", "HYDRA", "PROXY", "SYNOD", "CRYPT", "PYGMY", "AORTA", "NYMPH", "JUNTO"] },
-            1: { name: "Easy Monday", class: "diff-easy", words: ["APPLE", "BEACH", "SMILE", "PLANT", "LIGHT", "HOUSE", "TRAIN", "WATER", "SMART", "BREAD", "PAPER", "GRASS", "TABLE", "CLOCK", "CLOUD", "SHIRT"] },
-            2: { name: "Gentle Tuesday", class: "diff-easy", words: ["STORM", "FLAME", "SHARK", "NIGHT", "DANCE", "SWEET", "GREEN", "FORCE", "BRICK", "CHAIR", "ROUND", "HEART", "PIANO", "BRAVE", "TRUCK", "VOICE"] },
-            3: { name: "Balanced Wednesday", class: "diff-medium", words: ["CLASS", "FLOOR", "SPOON", "GLASS", "SKILL", "DRESS", "FRUIT", "SLEEP", "LEMON", "BROWN", "BLIND", "STIFF", "CROSS", "BREAD", "GRAPE", "SHARP"] },
-            4: { name: "Tricky Thursday", class: "diff-medium", words: ["BROKE", "HEAVY", "FLUID", "GHOST", "JUICY", "KNIFE", "MATCH", "PROUD", "ROUGH", "STAGE", "THICK", "WHILE", "YOUNG", "ZEBRA", "CLIMB", "FETCH"] },
-            5: { name: "Challenging Friday", class: "diff-hard", words: ["EQUIP", "GLYPH", "JAZZY", "VAGUE", "WRECK", "AMBER", "BLUFF", "CYNIC", "DWELT", "EPOCH", "FUDGE", "IVORY", "KHAKI", "LYRIC", "ONION", "PLAZA"] },
-            6: { name: "Expert Saturday", class: "diff-hard", words: ["VORTEX", "QUART", "KNEEL", "MUMMY", "PUPPY", "AVID", "AXIOM", "AZURE", "COCOA", "KUDZU", "MAXIM", "MYST", "PIXIE", "PSYCH", "QUOTA", "RADAR"] }
+            0: { name: "Extreme Sunday", class: "diff-hard" },
+            1: { name: "Easy Monday", class: "diff-easy" },
+            2: { name: "Gentle Tuesday", class: "diff-easy" },
+            3: { name: "Balanced Wednesday", class: "diff-medium" },
+            4: { name: "Tricky Thursday", class: "diff-medium" },
+            5: { name: "Challenging Friday", class: "diff-hard" },
+            6: { name: "Expert Saturday", class: "diff-hard" }
         };
 
         let VALID_GUESS_LIST = new Set();
-
         let targetWord = "";
         let currentGuess = "";
         let guesses = [];
@@ -336,11 +336,14 @@
         async function loadOnlineDictionary() {
             try {
                 const response = await fetch('https://raw.githubusercontent.com/raun/Scrabble/master/words.txt');
-                const text = await response.text();
+                let text = await response.text();
+                
+                // CRITICAL FIX: Strip formatting \r line breaks before character counting
+                text = text.replace(/\r/g, '');
                 
                 const wordsArray = text.split('\n')
                                       .map(w => w.trim().toUpperCase())
-                                      .filter(w => w.length === 5);
+                                      .filter(w => w.length === 5); // strictly 5-letter filter
                 
                 VALID_GUESS_LIST = new Set(wordsArray);
                 dictionaryLoaded = true;
@@ -365,8 +368,9 @@
             bannerElement.textContent = config.name;
             bannerElement.className = config.class;
             
-            targetWord = config.words[Math.floor(Math.random() * config.words.length)].toUpperCase();
-            VALID_GUESS_LIST.add(targetWord);
+            // UNLIMITED ENGINE: Picks random target answer from thousands of items in online dictionary
+            const wordsArray = Array.from(VALID_GUESS_LIST);
+            targetWord = wordsArray[Math.floor(Math.random() * wordsArray.length)];
             
             currentGuess = "";
             guesses = [];
@@ -383,6 +387,10 @@
                 }
                 gridElement.appendChild(row);
             }
+
+            // Clean colors from key elements
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => key.classList.remove('correct', 'present', 'absent'));
 
             buildKeyboard();
             modal.style.display = "none";
