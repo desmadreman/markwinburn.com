@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordie - Unlimited Dynamic Word Game with Assistant</title>
+    <style>
+        :root {
+            --color-correct: #538d4e;
+            --color-present: #b59f3b;
+            --color-absent: #3a3a3c;
+            --color-bg: #121213;
+            --color-surface: #1e1e1f;
+            --color-tile-border: #3a3a3c;
+            --color-tile-bg: #121213;
+            --color-text: #ffffff;
+            --color-key-bg: #818384;
+            --theme-accent: #4a90e2;
+            --color-muted: #818384;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        header {
+            border-bottom: 1px solid var(--color-tile-border);
+            width: 100%;
+            text-align: center;
+            padding: 14px 0;
+            background-color: rgba(18, 18, 19, 0.95);
+            backdrop-filter: blur(4px);
+            z-index: 5;
+            position: relative;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.4rem;
+            letter-spacing: 4px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 30%, #a1a1a1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        #difficulty-banner {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .diff-easy { color: #4caf50; }
+        .diff-medium { color: #ffeb3b; }
+        .diff-hard { color: #f44336; }
+
+        /* Subtle links styling in header */
+        .home-link {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.15s ease;
+        }
+
+        .home-link:hover {
+            text-decoration: underline;
+            color: #ffffff;
+        }
+
+        .solver-trigger {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--color-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.15s ease;
+            font-family: inherit;
+        }
+
+        .solver-trigger:hover {
+            text-decoration: underline;
+            color: #ffffff;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px 10px;
+            box-sizing: border-box;
+        }
+
+        #grid {
+            display: grid;
+            grid-template-rows: repeat(6, 1fr);
+            grid-gap: 6px;
+            width: 330px;
+            height: 400px;
+            max-width: 100%;
+            margin-bottom: 24px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 6px;
+        }
+
+        .tile {
+            border: 2px solid var(--color-tile-border);
+            background-color: var(--color-tile-bg);
+            color: var(--color-text);
+            border-radius: 4px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-sizing: border-box;
+            transition: transform 0.1s linear;
+        }
+
+        .tile.pop {
+            transform: scale(1.08);
+            border-color: #565758;
+        }
+
+        .tile.correct { background-color: var(--color-correct); border-color: var(--color-correct); }
+        .tile.present { background-color: var(--color-present); border-color: var(--color-present); }
+        .tile.absent { background-color: var(--color-absent); border-color: var(--color-absent); }
+
+        #keyboard {
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+            padding: 0 4px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 8px;
+            touch-action: manipulation;
+        }
+
+        .key {
+            background-color: var(--color-key-bg);
+            color: var(--color-text);
+            border: 0;
+            border-radius: 4px;
+            margin: 0 3px;
+            height: 58px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background-color 0.2s ease;
+        }
+
+        .key.large {
+            flex: 1.5;
+            font-size: 0.85rem;
+        }
+
+        .key.correct { background-color: var(--color-correct); }
+        .key.present { background-color: var(--color-present); }
+        .key.absent { background-color: var(--color-absent); }
+
+        /* Dialog & Solver Modals */
+        #modal, #solver-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.75);
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+
+        #solver-modal {
+            z-index: 15; /* Sits above standard popup alerts */
+        }
+
+        .modal-content {
+            background-color: #1e1e1f;
+            border: 1px solid var(--color-tile-border);
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 380px;
+            width: 85%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Unique Solver Layout Styles */
+        .solver-modal-content {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-tile-border);
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 540px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-sizing: border-box;
+        }
+
+        .solver-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--color-tile-border);
+            padding-bottom: 10px;
+        }
+
+        .solver-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .solver-close-btn {
+            background: none;
+            border: none;
+            color: var(--color-muted);
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.15s;
+        }
+
+        .solver-close-btn:hover {
+            color: #ffffff;
+        }
+
+        .solver-section-card {
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-tile-border);
+            border-radius: 8px;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .solver-section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .solver-section-title::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .solver-title-green::before { background-color: var(--color-correct); }
+        .solver-title-yellow::before { background-color: var(--color-present); }
+        .solver-title-gray::before { background-color: var(--color-absent); }
+
+        .solver-row-inputs {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 6px;
+        }
+
+        .solver-tile-input {
+            background-color: var(--color-surface);
+            border: 2px solid var(--color-tile-border);
+            color: #ffffff;
+            border-radius: 4px;
+            height: 44px;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .solver-tile-input:focus {
+            border-color: var(--theme-accent);
+        }
+
+        .solver-correct-input { border-color: var(--color-correct); }
+        .solver-exclude-input { border-color: var(--color-present); }
+
+        .solver-text-box-input {
+            width: 100%;
+            background-color: var(--color-surface);
+            border: 2px solid var(--color-tile-border);
+            color: #ffffff;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .solver-text-box-input:focus {
+            border-color: var(--theme-accent);
+        }
+
+        .solver-results-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .solver-results-container { grid-template-columns: 1fr; }
+        }
+
+        .solver-results-box {
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-tile-border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .solver-results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .solver-results-item {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-tile-border);
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .solver-score-badge {
+            font-size: 0.7rem;
+            background-color: var(--color-tile-border);
+            color: var(--color-muted);
+            padding: 2px 4px;
+            border-radius: 3px;
+            letter-spacing: 0;
+            font-weight: 500;
+        }
+
+        .solver-summary-banner {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--color-muted);
+        }
+
+        .solver-btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 12px;
+        }
+
+        .solver-btn {
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            transition: opacity 0.15s;
+            font-family: inherit;
+        }
+        .solver-btn:hover { opacity: 0.9; }
+        .solver-btn-sync { background-color: var(--theme-accent); }
+        .solver-btn-clear { background-color: #c62828; }
+
+        .modal-content h2 {
+            margin-top: 0;
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
+
+        .word-reveal {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #4a90e2;
+            margin: 15px 0;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            background-color: var(--theme-accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover { opacity: 0.9; }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--color-tile-border);
+            color: var(--color-text);
+        }
+
+        .modal-btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .modal-btn-row .btn {
+            margin-top: 0;
+        }
+
+        #toast {
+            visibility: hidden;
+            min-width: 150px;
+            background-color: #f8f9fa;
+            color: #212529;
+            text-align: center;
+            border-radius: 4px;
+            padding: 12px 20px;
+            position: fixed;
+            z-index: 20;
+            top: 12%;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadeInOut 2s ease-in-out;
+        }
+
+        @keyframes flipIn {
+            0% { transform: rotateX(0deg); background-color: var(--color-tile-bg); }
+            45% { transform: rotateX(90deg); background-color: var(--color-tile-bg); }
+            55% { transform: rotateX(90deg); }
+            100% { transform: rotateX(0deg); }
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateY(-10px); }
+            15%, 85% { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-height: 720px) {
+            #grid { height: 340px; width: 280px; margin-bottom: 12px; }
+            .key { height: 48px; font-size: 0.95rem; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/" class="home-link">home</a>
+        <h1>WORDIE</h1>
+        <button id="solver-trigger-btn" class="solver-trigger" onclick="openSolver()">solver</button>
+        <div id="difficulty-banner">Loading Dictionary...</div>
+    </header>
+
+    <div id="game-container">
+        <div id="grid"></div>
+
+        <div id="keyboard">
+            <div class="keyboard-row" id="row-1"></div>
+            <div class="keyboard-row" id="row-2"></div>
+            <div class="keyboard-row" id="row-3"></div>
+        </div>
+    </div>
+
+    <div id="toast">Not in word list</div>
+
+    <!-- Win / Loss Popup Modal -->
+    <div id="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Status</h2>
+            <div id="modal-word-container" style="display:none;">The word was: <div class="word-reveal" id="modal-word"></div></div>
+            <p id="modal-message"></p>
+            <div class="modal-btn-row">
+                <button class="btn btn-secondary" onclick="closeModal()">Back to Puzzle</button>
+                <button class="btn" onclick="resetGame()">New Puzzle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integrated Dynamic Solver Modal -->
+    <div id="solver-modal">
+        <div class="solver-modal-content">
+            <div class="solver-header">
+                <h2>WORDIE ASSISTANT</h2>
+                <button class="solver-close-btn" onclick="closeSolver()">&times;</button>
+            </div>
+
+            <div id="solver-summary" class="solver-summary-banner">Synchronizing with game board...</div>
+
+            <!-- Greens -->
+            <div class="solver-section-card">
+                <div class="solver-section-title solver-title-green">Correct Letters (Right Spot / Green)</div>
+                <div class="solver-row-inputs">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="0">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="1">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="2">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="3">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="4">
+                </div>
+            </div>
+
+            <!-- Yellows (In word, but NOT in this slot) -->
+            <div class="solver-section-card">
+                <div class="solver-section-title solver-title-yellow">Present Letters, But NOT in these slots (Yellows)</div>
+                <div class="solver-row-inputs">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="0" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="1" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="2" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="3" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="4" placeholder="ø">
+                </div>
+            </div>
+
+            <!-- Grays -->
+            <div class="solver-section-card">
+                <div class="solver-section-title solver-title-gray">Dead Letters (Not in Word / Gray)</div>
+                <input type="text" id="solver-absent-letters" class="solver-text-box-input" placeholder="e.g. AEIO">
+            </div>
+
+            <!-- Suggestion Lists -->
+            <div class="solver-results-container">
+                <div class="solver-results-box">
+                    <div class="solver-section-title" style="color: #4caf50;">Best Possible Answers</div>
+                    <ul id="solver-possible-answers" class="solver-results-list">
+                        <li class="solver-results-item" style="color: var(--color-muted); font-size: 0.8rem;">No matches</li>
+                    </ul>
+                </div>
+
+                <div class="solver-results-box">
+                    <div class="solver-section-title" style="color: #2196f3;">Best Eliminator Words</div>
+                    <ul id="solver-best-eliminators" class="solver-results-list">
+                        <li class="solver-results-item" style="color: var(--color-muted); font-size: 0.8rem;">No suggestions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Function Controls -->
+            <div class="solver-btn-row">
+                <button class="solver-btn solver-btn-sync" onclick="syncSolverFromBoard()">Sync Board Data</button>
+                <button class="solver-btn solver-btn-clear" onclick="clearSolverFields()">Clear Solver</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WEEKLY_WORDS = {
+            0: { name: "Extreme Sunday", class: "diff-hard" },
+            1: { name: "Easy Monday", class: "diff-easy" },
+            2: { name: "Gentle Tuesday", class: "diff-easy" },
+            3: { name: "Balanced Wednesday", class: "diff-medium" },
+            4: { name: "Tricky Thursday", class: "diff-medium" },
+            5: { name: "Challenging Friday", class: "diff-hard" },
+            6: { name: "Expert Saturday", class: "diff-hard" }
+        };
+
+        let VALID_GUESS_LIST = new Set();
+        let targetWord = "";
+        let currentGuess = "";
+        let guesses = [];
+        const MAX_GUESSES = 6;
+        const WORD_LENGTH = 5;
+        let isAnimating = false;
+        let dictionaryLoaded = false;
+
+        const gridElement = document.getElementById('grid');
+        const modal = document.getElementById('modal');
+        const solverModal = document.getElementById('solver-modal');
+        const bannerElement = document.getElementById('difficulty-banner');
+        const toastElement = document.getElementById('toast');
+
+        const keysRow1 = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"];
+        const keysRow2 = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
+        const keysRow3 = ["ENTER", "z", "x", "c", "v", "b", "n", "m", "←"];
+
+        async function loadOnlineDictionary() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/raun/Scrabble/master/words.txt');
+                let text = await response.text();
+                
+                text = text.replace(/\r/g, '');
+                
+                const wordsArray = text.split('\n')
+                                      .map(w => w.trim().toUpperCase())
+                                      .filter(w => w.length === 5);
+                
+                VALID_GUESS_LIST = new Set(wordsArray);
+                dictionaryLoaded = true;
+                initGame();
+            } catch (error) {
+                console.error("Dictionary download failed, applying fallback bank:", error);
+                VALID_GUESS_LIST = new Set(["APPLE", "BEACH", "SMILE", "HOUSE", "TRAIN", "WATER", "SMART"]);
+                dictionaryLoaded = true;
+                initGame();
+            }
+        }
+
+        function getDayConfig() {
+            const dayOfWeek = new Date().getDay();
+            return WEEKLY_WORDS[dayOfWeek];
+        }
+
+        function initGame() {
+            if (!dictionaryLoaded) return;
+
+            const config = getDayConfig();
+            bannerElement.textContent = config.name;
+            bannerElement.className = config.class;
+            
+            const wordsArray = Array.from(VALID_GUESS_LIST);
+            targetWord = wordsArray[Math.floor(Math.random() * wordsArray.length)];
+            
+            currentGuess = "";
+            guesses = [];
+            isAnimating = false;
+            
+            gridElement.innerHTML = "";
+            for (let i = 0; i < MAX_GUESSES; i++) {
+                const row = document.createElement('div');
+                row.className = 'row';
+                for (let j = 0; j < WORD_LENGTH; j++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    row.appendChild(tile);
+                }
+                gridElement.appendChild(row);
+            }
+
+            // Reset physical / virtual keyboard styling
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => key.classList.remove('correct', 'present', 'absent'));
+
+            buildKeyboard();
+            modal.style.display = "none";
+            clearSolverFields(); // Restart solver state cleanly for new puzzle
+        }
+
+        function buildKeyboard() {
+            setupRow('row-1', keysRow1);
+            setupRow('row-2', keysRow2);
+            setupRow('row-3', keysRow3);
+        }
+
+        function setupRow(rowId, keys) {
+            const rowEl = document.getElementById(rowId);
+            rowEl.innerHTML = "";
+            keys.forEach(key => {
+                const button = document.createElement('button');
+                button.textContent = key;
+                button.className = 'key';
+                if (key === 'ENTER' || key === '←') button.classList.add('large');
+                button.setAttribute('data-key', key.toLowerCase());
+                button.addEventListener('click', () => handleKeyPress(key));
+                rowEl.appendChild(button);
+            });
+        }
+
+        function showToast(message) {
+            toastElement.textContent = message;
+            toastElement.classList.add('show');
+            setTimeout(() => { toastElement.classList.remove('show'); }, 2000);
+        }
+
+        function updateGrid() {
+            const rows = gridElement.querySelectorAll('.row');
+            const currentRowIndex = guesses.length;
+            
+            if (currentRowIndex < MAX_GUESSES) {
+                const tiles = rows[currentRowIndex].querySelectorAll('.tile');
+                for (let i = 0; i < WORD_LENGTH; i++) {
+                    tiles[i].textContent = currentGuess[i] || "";
+                    if (currentGuess[i]) {
+                        tiles[i].classList.add('pop');
+                    } else {
+                        tiles[i].classList.remove('pop');
+                    }
+                }
+            }
+        }
+
+        function handleKeyPress(key) {
+            if (!dictionaryLoaded || guesses.length >= MAX_GUESSES || isAnimating) return;
+            if (solverModal.style.display === "flex") return; // Key blocker if solver is focused
+
+            if (key === '←' || key.toLowerCase() === 'backspace') {
+                currentGuess = currentGuess.slice(0, -1);
+                updateGrid();
+            } else if (key === 'ENTER' || key.toLowerCase() === 'enter') {
+                if (currentGuess.length === WORD_LENGTH) {
+                    submitGuess();
+                } else {
+                    showToast("Too short");
+                }
+            } else if (/^[a-zA-Z]$/.test(key) && currentGuess.length < WORD_LENGTH) {
+                currentGuess += key.toUpperCase();
+                updateGrid();
+            }
+        }
+
+        function submitGuess() {
+            const guess = currentGuess;
+            
+            if (!VALID_GUESS_LIST.has(guess)) {
+                showToast("Not in word list");
+                return;
+            }
+
+            isAnimating = true;
+            const rows = gridElement.querySelectorAll('.row');
+            const tiles = rows[guesses.length].querySelectorAll('.tile');
+            
+            let targetLetterCounts = {};
+            for (let char of targetWord) {
+                targetLetterCounts[char] = (targetLetterCounts[char] || 0) + 1;
+            }
+
+            let statuses = Array(WORD_LENGTH).fill('absent');
+
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                if (guess[i] === targetWord[i]) {
+                    statuses[i] = 'correct';
+                    targetLetterCounts[guess[i]]--;
+                }
+            }
+
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                if (statuses[i] !== 'correct') {
+                    if (targetLetterCounts[guess[i]] > 0) {
+                        statuses[i] = 'present';
+                        targetLetterCounts[guess[i]]--;
+                    }
+                }
+            }
+
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                const tile = tiles[i];
+                const status = statuses[i];
+                const letter = guess[i].toLowerCase();
+                
+                setTimeout(() => {
+                    tile.style.animation = "flipIn 0.5s ease";
+                    
+                    setTimeout(() => {
+                        tile.classList.add(status);
+                    }, 250);
+
+                    if (i === WORD_LENGTH - 1) {
+                        setTimeout(() => {
+                            isAnimating = false;
+                            completeTurn(guess);
+                        }, 500);
+                    }
+                    
+                    updateKeyboardKey(letter, status);
+                }, i * 150);
+            }
+        }
+
+        function completeTurn(guess) {
+            guesses.push(guess);
+            currentGuess = "";
+
+            // Push game updates to populating assistant state automatically
+            syncSolverFromBoard();
+
+            if (guess === targetWord) {
+                endGame(true);
+            } else if (guesses.length === MAX_GUESSES) {
+                endGame(false);
+            }
+        }
+
+        function updateKeyboardKey(letter, status) {
+            const keyEl = document.querySelector(`.key[data-key="${letter}"]`);
+            if (!keyEl) return;
+
+            if (keyEl.classList.contains('correct')) return;
+            if (keyEl.classList.contains('present') && status === 'absent') return;
+
+            keyEl.classList.remove('present', 'absent');
+            keyEl.classList.add(status);
+        }
+
+        function endGame(win) {
+            document.getElementById('modal-title').textContent = win ? "Splendid!" : "Nice Try!";
+            const wordContainer = document.getElementById('modal-word-container');
+            
+            if (!win) {
+                wordContainer.style.display = "block";
+                document.getElementById('modal-word').textContent = targetWord;
+            } else {
+                wordContainer.style.display = "none";
+            }
+
+            document.getElementById('modal-message').textContent = win 
+                ? `You solved today's puzzle in ${guesses.length} ${guesses.length === 1 ? 'attempt' : 'attempts'}!` 
+                : "Don't let it get you down. Try another one!";
+            
+            setTimeout(() => {
+                modal.style.display = "flex";
+            }, 500);
+        }
+
+        function resetGame() {
+            initGame();
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (modal.style.display === "flex") return;
+            handleKeyPress(e.key);
+        });
+
+
+        /* ========================================================
+           INTEGRATED WORDIE ASSISTANT & SOLVER ENGINE
+           ======================================================== */
+        
+        function openSolver() {
+            solverModal.style.display = "flex";
+            calculateSuggestions();
+        }
+
+        function closeSolver() {
+            solverModal.style.display = "none";
+        }
+
+        // Extracts outcomes from the board state and merges them without overwriting manual data
+        function syncSolverFromBoard() {
+            if (!dictionaryLoaded) return;
+
+            const correctInputs = Array.from(document.querySelectorAll('.solver-correct-input'));
+            const excludeInputs = Array.from(document.querySelectorAll('.solver-exclude-input'));
+            const absentInput = document.getElementById('solver-absent-letters');
+
+            let currentAbsent = new Set(absentInput.value.toUpperCase().split('').filter(c => /[A-Z]/.test(c)));
+
+            guesses.forEach(guess => {
+                let targetLetterCounts = {};
+                for (let char of targetWord) {
+                    targetLetterCounts[char] = (targetLetterCounts[char] || 0) + 1;
+                }
+
+                let statuses = Array(WORD_LENGTH).fill('absent');
+
+                // Pass 1: Handle Locked Green Positions
+                for (let i = 0; i < WORD_LENGTH; i++) {
+                    if (guess[i] === targetWord[i]) {
+                        statuses[i] = 'correct';
+                        targetLetterCounts[guess[i]]--;
+                        correctInputs[i].value = guess[i]; 
+                    }
+                }
+
+                // Pass 2: Handle Displaced Yellow Exclusions
+                for (let i = 0; i < WORD_LENGTH; i++) {
+                    if (statuses[i] !== 'correct') {
+                        if (targetLetterCounts[guess[i]] > 0) {
+                            statuses[i] = 'present';
+                            targetLetterCounts[guess[i]]--;
+                            
+                            let currentVal = excludeInputs[i].value.toUpperCase();
+                            if (!currentVal.includes(guess[i])) {
+                                excludeInputs[i].value = (currentVal + guess[i]).split('').sort().join('');
+                            }
+                        } else {
+                            statuses[i] = 'absent';
+                        }
+                    }
+                }
+
+                // Collect Absent Letters (Ensures we don't exclude a yellow duplicate letter globally)
+                for (let i = 0; i < WORD_LENGTH; i++) {
+                    if (statuses[i] === 'absent') {
+                        let isUsedElsewhere = false;
+                        for (let j = 0; j < WORD_LENGTH; j++) {
+                            if (guess[j] === guess[i] && (statuses[j] === 'correct' || statuses[j] === 'present')) {
+                                isUsedElsewhere = true;
+                            }
+                        }
+                        if (!isUsedElsewhere) {
+                            currentAbsent.add(guess[i]);
+                        }
+                    }
+                }
+            });
+
+            absentInput.value = Array.from(currentAbsent).sort().join('');
+            calculateSuggestions();
+        }
+
+        // Resolves constraint rules and calculates recommended selections
+        function calculateSuggestions() {
+            if (!dictionaryLoaded) return;
+
+            const correctPattern = Array.from(document.querySelectorAll('.solver-correct-input')).map(i => i.value.toUpperCase());
+            const structuralExclusions = Array.from(document.querySelectorAll('.solver-exclude-input')).map(i => i.value.toUpperCase());
+            
+            const allPresentLetters = new Set();
+            structuralExclusions.forEach(str => {
+                for(let char of str) { if(/[A-Z]/.test(char)) allPresentLetters.add(char); }
+            });
+
+            const absentInput = document.getElementById('solver-absent-letters').value.toUpperCase();
+            const absentLetters = new Set(absentInput.split('').filter(c => /[A-Z]/.test(c)));
+
+            // 1. Candidate Extraction
+            const matchedWords = Array.from(VALID_GUESS_LIST).filter(word => {
+                for (let char of word) {
+                    if (absentLetters.has(char)) return false;
+                }
+
+                for (let i = 0; i < WORD_LENGTH; i++) {
+                    const letterAtPos = word[i];
+                    if (correctPattern[i] && correctPattern[i] !== letterAtPos) return false;
+                    if (structuralExclusions[i] && structuralExclusions[i].includes(letterAtPos)) return false;
+                }
+
+                for (let yellowChar of allPresentLetters) {
+                    if (!word.includes(yellowChar)) return false;
+                }
+
+                return true;
+            });
+
+            // 2. Aggregate statistics across potential matches
+            const frequencyMap = {};
+            matchedWords.forEach(word => {
+                const uniqueLetters = new Set(word);
+                uniqueLetters.forEach(char => {
+                    frequencyMap[char] = (frequencyMap[char] || 0) + 1;
+                });
+            });
+
+            // Letter frequency score aggregator
+            function getWordScore(word, uniqueBonusOnly = true) {
+                let score = 0;
+                const seen = new Set();
+                for (let char of word) {
+                    if (!uniqueBonusOnly || !seen.has(char)) {
+                        score += (frequencyMap[char] || 0);
+                        seen.add(char);
+                    }
+                }
+                return score;
+            }
+
+            // 3. Best Answer Sorting
+            const scoredAnswers = matchedWords.map(word => ({ word, score: getWordScore(word, false) }));
+            scoredAnswers.sort((a, b) => b.score - a.score);
+
+            // 4. Strategic Eliminator Sorting (Runs on entire dict to break cluster bottlenecks)
+            const scoredEliminators = Array.from(VALID_GUESS_LIST).map(word => ({ word, score: getWordScore(word, true) }));
+            scoredEliminators.sort((a, b) => b.score - a.score);
+
+            // Write metrics to UI
+            document.getElementById('solver-summary').textContent = `Filtered matches: ${matchedWords.length} valid words found.`;
+            
+            renderSolverList('solver-possible-answers', scoredAnswers.slice(0, 5));
+            renderSolverList('solver-best-eliminators', scoredEliminators.slice(0, 5));
+        }
+
+        function renderSolverList(elementId, items) {
+            const listEl = document.getElementById(elementId);
+            listEl.innerHTML = "";
+            
+            if (items.length === 0) {
+                listEl.innerHTML = `<li class="solver-results-item" style="color: var(--color-muted); font-size: 0.8rem; letter-spacing: 0;">No results</li>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'solver-results-item';
+                li.innerHTML = `${item.word} <span class="solver-score-badge">val: ${item.score}</span>`;
+                listEl.appendChild(li);
+            });
+        }
+
+        function clearSolverFields() {
+            document.querySelectorAll('.solver-tile-input').forEach(input => input.value = "");
+            document.getElementById('solver-absent-letters').value = "";
+            calculateSuggestions();
+        }
+
+        // Attach recalculating triggers to solver inputs
+        document.querySelectorAll('.solver-tile-input, .solver-text-box-input').forEach(input => {
+            input.addEventListener('input', () => {
+                // Positional box auto-advance
+                if (input.classList.contains('solver-correct-input') && input.value.length === 1) {
+                    const nextPos = parseInt(input.getAttribute('data-pos')) + 1;
+                    const nextInput = document.querySelector(`.solver-correct-input[data-pos="${nextPos}"]`);
+                    if (nextInput) nextInput.focus();
+                }
+                calculateSuggestions();
+            });
+        });
+
+        // Initialize App
+        loadOnlineDictionary();
+    </script>
+</body>
+</html>
