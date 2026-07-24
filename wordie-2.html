@@ -86,11 +86,18 @@
             color: #ffffff;
         }
 
-        .solver-trigger {
+        .header-right-controls {
             position: absolute;
             right: 20px;
             top: 50%;
             transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .new-puzzle-trigger,
+        .solver-trigger {
             background: none;
             border: none;
             color: var(--color-muted);
@@ -99,8 +106,10 @@
             cursor: pointer;
             transition: color 0.15s ease;
             font-family: inherit;
+            padding: 0;
         }
 
+        .new-puzzle-trigger:hover,
         .solver-trigger:hover {
             text-decoration: underline;
             color: #ffffff;
@@ -525,7 +534,10 @@
     <header>
         <a href="/" class="home-link">home</a>
         <h1>WORDIE</h1>
-        <button id="solver-trigger-btn" class="solver-trigger" onclick="openSolver()">solver</button>
+        <div class="header-right-controls">
+            <button id="new-puzzle-trigger-btn" class="new-puzzle-trigger" onclick="resetGame()">new puzzle</button>
+            <button id="solver-trigger-btn" class="solver-trigger" onclick="openSolver()">solver</button>
+        </div>
         <div id="difficulty-banner">Loading Dictionary...</div>
     </header>
 
