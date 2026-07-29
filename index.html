@@ -403,19 +403,30 @@
 
         .gallery-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--cyan), var(--magenta));
+            inset: 0;
+            background: rgba(10, 10, 15, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            text-align: center;
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
-            mix-blend-mode: overlay;
         }
 
-        .gallery-item:hover .gallery-overlay {
-            opacity: 0.3;
+        /* Show hover caption only if it contains text */
+        .gallery-item:hover .gallery-overlay:not(:empty),
+        .gallery-item:focus-within .gallery-overlay:not(:empty) {
+            opacity: 1;
+        }
+
+        .gallery-caption {
+            font-family: 'Silkscreen', cursive;
+            font-size: 0.75rem;
+            color: var(--cyan);
+            letter-spacing: 1px;
+            line-height: 1.4;
         }
 
         /* Lightbox */
@@ -706,7 +717,6 @@
                 font-size: 1rem;
             }
 
-            /* Mobile: mode selector sits at bottom of slide-out panel */
             .nav-links .mode-select {
                 margin-top: auto;
                 margin-bottom: 2rem;
@@ -715,7 +725,7 @@
             }
         }
 
-        /* ── Mode Selector Dropdown ─────────────────────────────────── */
+        /* Mode Selector Dropdown */
         .mode-select {
             font-family: 'Silkscreen', cursive;
             font-size: 0.65rem;
@@ -728,7 +738,6 @@
             flex-shrink: 0;
             appearance: none;
             -webkit-appearance: none;
-            /* custom arrow using cyan */
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%2300ffff' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 0.5rem center;
@@ -757,48 +766,16 @@
             cursor: not-allowed;
         }
 
-        /* ── xkcd Mode CSS Filters ──────────────────────────────────── */
+        /* xkcd Mode Filters */
+        .mode-lighter body { filter: brightness(1.8) contrast(0.6) saturate(0.5); }
+        .mode-darker body { filter: brightness(0.05); }
+        .mode-darker nav { filter: brightness(8); }
+        .mode-blurry body { filter: blur(3px); }
+        .mode-blurry nav { filter: none; }
+        .mode-grayscale body { filter: grayscale(100%); }
+        .mode-greyscale body { filter: grayscale(100%); }
+        .mode-dorian body { filter: grayscale(100%) brightness(0.75); transition: filter 300s ease-out; }
 
-        /* LIGHTER — overexposed */
-        .mode-lighter body {
-            filter: brightness(1.8) contrast(0.6) saturate(0.5);
-        }
-
-        /* DARKEST — everything black */
-        .mode-darker body {
-            filter: brightness(0.05);
-        }
-        /* keep the nav/dropdown barely visible */
-        .mode-darker nav {
-            filter: brightness(8);
-        }
-
-        /* BLURRY */
-        .mode-blurry body {
-            filter: blur(3px);
-        }
-        /* keep nav sharp */
-        .mode-blurry nav {
-            filter: none;
-        }
-
-        /* GRAYSCALE */
-        .mode-grayscale body {
-            filter: grayscale(100%);
-        }
-
-        /* GREYSCALE (same filter, British spelling) */
-        .mode-greyscale body {
-            filter: grayscale(100%);
-        }
-
-        /* DORIAN GREYSCALE — slow transition to grey over 5 min */
-        .mode-dorian body {
-            filter: grayscale(100%) brightness(0.75);
-            transition: filter 300s ease-out;
-        }
-
-        /* HACKER — green on black */
         .mode-hacker {
             --darker: #000000;
             --dark: #001100;
@@ -807,26 +784,12 @@
             --cyan: #00ff41;
             --magenta: #00cc33;
         }
-        .mode-hacker body {
-            font-family: 'Courier New', monospace !important;
-            text-shadow: 0 0 5px #00ff41;
-        }
-        .mode-hacker h1 {
-            background: none !important;
-            -webkit-text-fill-color: #00ff41 !important;
-            text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41;
-        }
+        .mode-hacker body { font-family: 'Courier New', monospace !important; text-shadow: 0 0 5px #00ff41; }
+        .mode-hacker h1 { background: none !important; -webkit-text-fill-color: #00ff41 !important; text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41; }
 
-        /* INK — blue ink tint */
-        .mode-ink body {
-            filter: sepia(60%) hue-rotate(180deg) saturate(2) brightness(0.95);
-        }
-
-        /* STAINED GLASS */
-        .mode-stained-glass body {
-            /* Boost saturation and contrast so colours pop through the overlay */
-            filter: saturate(1.6) contrast(1.1);
-        }
+        .mode-ink body { filter: sepia(60%) hue-rotate(180deg) saturate(2) brightness(0.95); }
+        .mode-stained-glass body { filter: saturate(1.6) contrast(1.1); }
+        
         #stained-glass-overlay {
             position: fixed;
             inset: 0;
@@ -834,19 +797,10 @@
             pointer-events: none;
             mix-blend-mode: multiply;
         }
-        /* Keep nav on top of the glass overlay and readable */
-        .mode-stained-glass nav {
-            z-index: 8000;
-            position: fixed;
-        }
+        .mode-stained-glass nav { z-index: 8000; position: fixed; }
 
-        /* 3D — red/cyan anaglyph */
-        .mode-3d body {
-            filter: none;
-        }
-        .mode-3d body > * {
-            position: relative;
-        }
+        .mode-3d body { filter: none; }
+        .mode-3d body > * { position: relative; }
         .mode-3d body::before {
             content: '';
             position: fixed;
@@ -856,23 +810,11 @@
             z-index: 9999;
             mix-blend-mode: multiply;
         }
-        .mode-3d section,
-        .mode-3d nav,
-        .mode-3d footer {
-            /* ghost red channel offset */
-            text-shadow: -3px 0 0 rgba(255,0,0,0.6), 3px 0 0 rgba(0,255,255,0.6);
-        }
-        .mode-3d img {
-            filter: drop-shadow(-3px 0 0 rgba(255,0,0,0.5));
-        }
+        .mode-3d section, .mode-3d nav, .mode-3d footer { text-shadow: -3px 0 0 rgba(255,0,0,0.6), 3px 0 0 rgba(0,255,255,0.6); }
+        .mode-3d img { filter: drop-shadow(-3px 0 0 rgba(255,0,0,0.5)); }
 
-        /* ANTIPODES — upside down */
-        .mode-antipodes body {
-            transform: rotate(180deg);
-            transform-origin: center center;
-        }
+        .mode-antipodes body { transform: rotate(180deg); transform-origin: center center; }
 
-        /* SPACE OPERA */
         #space-opera-overlay {
             position: fixed;
             inset: 0;
@@ -916,13 +858,8 @@
             from { bottom: -100%; }
             to   { bottom: 200%; }
         }
-        /* Keep mode selector accessible over space opera */
-        #space-opera-overlay ~ nav,
-        body > nav {
-            z-index: 9000;
-        }
+        #space-opera-overlay ~ nav, body > nav { z-index: 9000; }
 
-        /* AIRPLANE MODE — banner */
         #airplane-banner {
             position: fixed;
             top: 0;
@@ -937,43 +874,29 @@
             padding: 0.5rem;
             letter-spacing: 1px;
         }
-        .mode-airplane body {
-            filter: none;
-        }
-
-        /* BOAT MODE — additional ocean tint */
-        .mode-boat body {
-            background-image: linear-gradient(180deg, transparent 60%, rgba(0,80,180,0.15) 100%);
-        }
+        .mode-airplane body { filter: none; }
+        .mode-boat body { background-image: linear-gradient(180deg, transparent 60%, rgba(0,80,180,0.15) 100%); }
     </style>
 
     <style id="geocities-styles">
-        /* GeoCities Mode - Easter Egg */
+        /* GeoCities Mode */
         body.geo-mode { 
             background: #0000ff !important; 
             background-image: url('https://web.archive.org/web/20091027083113im_/http://geocities.com/Heartland/7134/Backgrounds/stars.gif') !important;
             font-family: "Comic Sans MS", "Comic Sans", cursive !important;
             color: #00ff00 !important;
         }
-        
         body.geo-mode h1 {
             background: none !important;
             -webkit-text-fill-color: yellow !important;
             text-shadow: 3px 3px red !important;
             animation: geoblink 0.5s step-end infinite !important;
         }
-        
-        body.geo-mode nav, 
-        body.geo-mode footer, 
-        body.geo-mode .modal-content {
+        body.geo-mode nav, body.geo-mode footer, body.geo-mode .modal-content {
             background: #ff00ff !important;
             border: 5px outset #00ffff !important;
         }
-        
-        @keyframes geoblink { 
-            50% { visibility: hidden; } 
-        }
-        
+        @keyframes geoblink { 50% { visibility: hidden; } }
         .netscape-badge {
             display: inline-block; 
             border: 2px solid white; 
@@ -1052,7 +975,7 @@
             </div>
             <div class="hero-image">
                 <div class="headshot-container">
-                    <img src="headshot.jpeg" alt="Mark Winburn" class="headshot">
+                    <img src="headshot.jpeg" alt="Mark Winburn headshot" class="headshot">
                 </div>
             </div>
         </div>
@@ -1063,12 +986,11 @@
         <div class="bio-text">
             <p>Recovering software developer. Semi-retired senior executive with experience in all levels of the IT software industry for over 30 years. Currently touring the globe, seeing old friends, making new ones, and making sure to take in the sights as a proper slowmad. And I don't have an OnlyFans. (Quit asking.)</p>
             <p>&nbsp;</p>
- <p>
-     I'm not <a href="https://www.instagram.com/anthonybourdain/?hl=en">Anthony Bourdain</a> or <a href="https://www.nytimes.com/2020/04/19/arts/peter-beard-dead.html">Peter Beard</a> but I play them on the internet.
- </p>
-             <p>&nbsp;</p>
-            <p>Also: vaccines are good for you, the world isn't flat, chemtrails are condensation trails, abortions are a woman's choice,  and FREE PALESTINE! Have&nbsp;a&nbsp;nice&nbsp;day!&trade;
+            <p>
+                I'm not <a href="https://www.instagram.com/anthonybourdain/?hl=en">Anthony Bourdain</a> or <a href="https://www.nytimes.com/2020/04/19/arts/peter-beard-dead.html">Peter Beard</a> but I play them on the internet.
             </p>
+            <p>&nbsp;</p>
+            <p>Also: vaccines are good for you, the world isn't flat, chemtrails are condensation trails, abortions are a woman's choice, and FREE PALESTINE! Have&nbsp;a&nbsp;nice&nbsp;day!&trade;</p>
         </div>
     </section>
 
@@ -1134,7 +1056,7 @@
 
     <!-- JavaScript -->
     <script>
-        // 1. Page Loader - Exactly 1 second
+        // 1. Page Loader
         window.addEventListener('load', () => {
             setTimeout(() => {
                 document.getElementById('loader').classList.add('hidden');
@@ -1142,19 +1064,14 @@
         });
 
         // 2. xkcd Mode Selector
-        // ─────────────────────────────────────────────────────────────
-        // Mode cleanup registry — each mode can register a teardown fn
         const modeCleanups = [];
         function registerCleanup(fn) { modeCleanups.push(fn); }
         function runCleanups() {
             while (modeCleanups.length) modeCleanups.pop()();
         }
 
-        // Master mode applier
         function applyMode(mode) {
             runCleanups();
-
-            // Remove all mode classes from html and body
             const modeClasses = [
                 'mode-light','mode-dark','mode-darker','mode-lighter',
                 'mode-blurry','mode-grayscale','mode-greyscale','mode-dorian',
@@ -1164,33 +1081,17 @@
             ];
             document.documentElement.classList.remove(...modeClasses);
             document.body.classList.remove(...modeClasses);
-
-            // Reset data-theme
             document.documentElement.removeAttribute('data-theme');
 
-            // Apply chosen mode
             switch (mode) {
-                case 'light':
-                    document.documentElement.setAttribute('data-theme', 'light');
-                    break;
-                case 'dark':
-                    // default — nothing extra needed
-                    break;
-                case 'darker':
-                    document.documentElement.classList.add('mode-darker');
-                    break;
-                case 'lighter':
-                    document.documentElement.classList.add('mode-lighter');
-                    break;
-                case 'blurry':
-                    document.documentElement.classList.add('mode-blurry');
-                    break;
-                case 'grayscale':
-                    document.documentElement.classList.add('mode-grayscale');
-                    break;
+                case 'light': document.documentElement.setAttribute('data-theme', 'light'); break;
+                case 'dark': break;
+                case 'darker': document.documentElement.classList.add('mode-darker'); break;
+                case 'lighter': document.documentElement.classList.add('mode-lighter'); break;
+                case 'blurry': document.documentElement.classList.add('mode-blurry'); break;
+                case 'grayscale': document.documentElement.classList.add('mode-grayscale'); break;
                 case 'greyscale':
                     document.documentElement.classList.add('mode-greyscale');
-                    // swap "math" → "maths" in nav slogan area
                     document.querySelectorAll('*').forEach(el => {
                         if (el.children.length === 0 && el.textContent.includes('math')) {
                             el.dataset.origText = el.textContent;
@@ -1204,50 +1105,25 @@
                         });
                     });
                     break;
-                case 'dorian':
-                    document.documentElement.classList.add('mode-dorian');
-                    break;
-                case 'hacker':
-                    document.documentElement.classList.add('mode-hacker');
-                    break;
-                case 'ink':
-                    document.documentElement.classList.add('mode-ink');
-                    break;
+                case 'dorian': document.documentElement.classList.add('mode-dorian'); break;
+                case 'hacker': document.documentElement.classList.add('mode-hacker'); break;
+                case 'ink': document.documentElement.classList.add('mode-ink'); break;
                 case 'stained-glass':
                     document.documentElement.classList.add('mode-stained-glass');
                     applyStainedGlass();
                     break;
-                case '3d':
-                    document.documentElement.classList.add('mode-3d');
-                    break;
-                case 'origami':
-                    applyOrigami();
-                    break;
-                case 'spring':
-                    applySpring();
-                    break;
-                case 'screensaver':
-                    applyScreensaver();
-                    break;
-                case 'antipodes':
-                    document.documentElement.classList.add('mode-antipodes');
-                    break;
-                case 'space-opera':
-                    applySpaceOpera();
-                    break;
-                case 'modem':
-                    applyModem();
-                    break;
-                case 'airplane':
-                    applyAirplane();
-                    break;
-                case 'boat':
-                    applyBoat();
-                    break;
+                case '3d': document.documentElement.classList.add('mode-3d'); break;
+                case 'origami': applyOrigami(); break;
+                case 'spring': applySpring(); break;
+                case 'screensaver': applyScreensaver(); break;
+                case 'antipodes': document.documentElement.classList.add('mode-antipodes'); break;
+                case 'space-opera': applySpaceOpera(); break;
+                case 'modem': applyModem(); break;
+                case 'airplane': applyAirplane(); break;
+                case 'boat': applyBoat(); break;
             }
         }
 
-        // ── SPRING MODE ───────────────────────────────────────────────
         function applySpring() {
             let tilt = 0, velocity = 0;
             const hero = document.querySelector('.hero-content') || document.body;
@@ -1267,32 +1143,19 @@
             });
         }
 
-        // ── SCREENSAVER MODE ──────────────────────────────────────────
         function applyScreensaver() {
             const headshot = document.querySelector('.headshot-container');
             if (!headshot) return;
 
-            // Snapshot original styles so we can restore cleanly
             const savedStyle = headshot.getAttribute('style') || '';
             const savedParentStyle = headshot.parentElement.getAttribute('style') || '';
 
-            // Pull headshot out of flow into a fixed bouncing element
             const SIZE = 220;
             headshot.style.cssText = `
-                position: fixed;
-                width: ${SIZE}px;
-                height: ${SIZE}px;
-                z-index: 5000;
-                left: 100px;
-                top: 100px;
-                margin: 0;
-                max-width: none;
-                transition: none;
-                border: 4px solid var(--cyan);
-                overflow: hidden;
-                aspect-ratio: 1;
+                position: fixed; width: ${SIZE}px; height: ${SIZE}px; z-index: 5000;
+                left: 100px; top: 100px; margin: 0; max-width: none; transition: none;
+                border: 4px solid var(--cyan); overflow: hidden; aspect-ratio: 1;
             `;
-            // Collapse the parent so the hero layout doesn't leave a gap
             headshot.parentElement.style.minHeight = '0';
 
             let x = 100, y = 100, vx = 2.5, vy = 2.1;
@@ -1311,7 +1174,6 @@
             });
         }
 
-        // ── ORIGAMI MODE ──────────────────────────────────────────────
         function applyOrigami() {
             document.documentElement.classList.add('mode-origami');
             const sections = document.querySelectorAll('section, footer, nav');
@@ -1327,9 +1189,7 @@
             });
         }
 
-        // ── STAINED GLASS MODE ────────────────────────────────────────
         function applyStainedGlass() {
-            // Build an SVG overlay with a lead-came grid + colour washes
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.id = 'stained-glass-overlay';
             svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -1338,18 +1198,11 @@
             svg.setAttribute('width', W);
             svg.setAttribute('height', H);
 
-            // Colour palette — jewel tones
             const colours = [
-                'rgba(180,40,220,0.22)',  // violet
-                'rgba(30,120,220,0.22)',  // sapphire
-                'rgba(20,180,80,0.22)',   // emerald
-                'rgba(220,160,20,0.22)',  // amber
-                'rgba(210,50,50,0.22)',   // ruby
-                'rgba(20,190,190,0.22)',  // teal
-                'rgba(240,120,20,0.22)',  // orange
+                'rgba(180,40,220,0.22)', 'rgba(30,120,220,0.22)', 'rgba(20,180,80,0.22)',
+                'rgba(220,160,20,0.22)', 'rgba(210,50,50,0.22)', 'rgba(20,190,190,0.22)', 'rgba(240,120,20,0.22)'
             ];
 
-            // Irregular polygon grid (Voronoi-ish feel via randomised rects + skew)
             const cols = 9, rows = 13;
             const cw = W / cols, ch = H / rows;
             let idx = 0;
@@ -1370,7 +1223,6 @@
                 }
             }
 
-            // Lead came — horizontal lines
             for (let r = 0; r <= rows; r++) {
                 const jy = r === 0 || r === rows ? 0 : (Math.random() - 0.5) * ch * 0.3;
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -1379,7 +1231,6 @@
                 line.setAttribute('stroke', '#111'); line.setAttribute('stroke-width', '3');
                 svg.appendChild(line);
             }
-            // Lead came — vertical lines (staggered per row for authenticity)
             for (let c = 0; c <= cols; c++) {
                 for (let r = 0; r < rows; r++) {
                     const jx = (Math.random() - 0.5) * cw * 0.25;
@@ -1397,6 +1248,7 @@
                 document.documentElement.classList.remove('mode-stained-glass');
             });
         }
+
         function applySpaceOpera() {
             const overlay = document.createElement('div');
             overlay.id = 'space-opera-overlay';
@@ -1416,7 +1268,6 @@
             registerCleanup(() => overlay.remove());
         }
 
-        // ── MODEM MODE ────────────────────────────────────────────────
         function applyModem() {
             const hero = document.querySelector('.hero');
             if (!hero) return;
@@ -1425,7 +1276,7 @@
                 background:var(--darker);z-index:50;pointer-events:none;`;
             hero.style.position = 'relative';
             hero.appendChild(cover);
-            // Modem dial-up sound via AudioContext
+            
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
             if (AudioCtx) {
                 const ctx = new AudioCtx();
@@ -1439,10 +1290,9 @@
                     o.start(ctx.currentTime + start);
                     o.stop(ctx.currentTime + start + dur + 0.01);
                 }
-                // Classic modem handshake tones
                 [300,1200,2400,980,1860,2400,1200,300,1800,600].forEach((f,i) => beep(f, i*0.18, 0.15, i%2?'square':'sawtooth'));
             }
-            // Reveal hero slowly top-to-bottom
+            
             let pct = 0;
             const reveal = setInterval(() => {
                 pct += 0.4;
@@ -1456,15 +1306,11 @@
             });
         }
 
-        // ── AIRPLANE MODE ─────────────────────────────────────────────
-        // The xkcd joke: airplane mode disables the OFF switch, not connectivity
         function applyAirplane() {
             document.documentElement.classList.add('mode-airplane');
-            // Disable the mode selector itself (you can't turn it off!)
             const sel = document.getElementById('mode-select');
             sel.disabled = true;
             sel.title = 'CONNECTION DISABLED — AIRPLANE MODE ACTIVE';
-            // Show a cheeky banner
             const banner = document.createElement('div');
             banner.id = 'airplane-banner';
             banner.innerHTML = '✈ AIRPLANE MODE ACTIVE — all controls disabled. Please stow your tray table. <small>(reload to escape)</small>';
@@ -1477,7 +1323,6 @@
             });
         }
 
-        // ── BOAT MODE ─────────────────────────────────────────────────
         function applyBoat() {
             document.documentElement.classList.add('mode-boat');
             let t = 0;
@@ -1497,22 +1342,20 @@
             });
         }
 
-        // ── Init: set default based on system pref ────────────────────
         const sel = document.getElementById('mode-select');
         const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
         sel.value = systemPrefersLight ? 'light' : 'dark';
         applyMode(sel.value);
-
         sel.addEventListener('change', () => applyMode(sel.value));
 
-        // 3. GeoCities Mode Toggle (Easter Egg)
+        // 3. GeoCities Toggle
         function toggleGeocities() {
             document.body.classList.toggle('geo-mode');
             const netscape = document.getElementById('netscape');
             netscape.style.display = document.body.classList.contains('geo-mode') ? 'block' : 'none';
         }
 
-        // 4. Scroll to Top Button
+        // 4. Scroll to Top
         const scrollTopBtn = document.getElementById('scrollTop');
         window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
@@ -1522,7 +1365,7 @@
             }
         });
 
-        // 5. Hamburger Menu Toggle
+        // 5. Hamburger Menu
         const hamburger = document.getElementById('hamburger');
         const navLinks = document.getElementById('navLinks');
         const nav = document.querySelector('nav');
@@ -1532,7 +1375,6 @@
             navLinks.classList.toggle('active');
         });
         
-        // Close menu when clicking on a link
         navLinks.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 hamburger.classList.remove('active');
@@ -1540,7 +1382,6 @@
             });
         });
         
-        // Close menu when clicking outside
         document.addEventListener('click', (e) => {
             if (!nav.contains(e.target)) {
                 hamburger.classList.remove('active');
@@ -1552,16 +1393,9 @@
         function toggleContact(show) {
             const overlay = document.getElementById('contactOverlay');
             overlay.classList.toggle('active', show);
-            
-            // Prevent body scroll when modal is open
-            if (show) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = '';
-            }
+            document.body.style.overflow = show ? 'hidden' : '';
         }
 
-        // Close modal on ESC key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 toggleContact(false);
@@ -1569,33 +1403,22 @@
             }
         });
 
-        // Close modal on outside click
         document.getElementById('contactOverlay').addEventListener('click', (e) => {
-            if (e.target.id === 'contactOverlay') {
-                toggleContact(false);
-            }
+            if (e.target.id === 'contactOverlay') toggleContact(false);
         });
 
         document.getElementById('substackOverlay').addEventListener('click', (e) => {
-            if (e.target.id === 'substackOverlay') {
-                toggleSubstack(false);
-            }
+            if (e.target.id === 'substackOverlay') toggleSubstack(false);
         });
 
         // 7. Substack Modal
         function toggleSubstack(show) {
             const overlay = document.getElementById('substackOverlay');
             overlay.classList.toggle('active', show);
-            
-            // Prevent body scroll when modal is open
-            if (show) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = '';
-            }
+            document.body.style.overflow = show ? 'hidden' : '';
         }
 
-        // 8. Intersection Observer for Bio Text Animation
+        // 8. Intersection Observer
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => { 
                 if (entry.isIntersecting) {
@@ -1606,39 +1429,26 @@
         
         document.querySelectorAll('.bio-text').forEach(el => observer.observe(el));
 
-        // 9. Photo Gallery Lightbox with Auto-Sorting
+        // 9. Photo Gallery Lightbox with Captions & Simple 1-12 Naming
         let currentPhotoIndex = 0;
         
-        // ========================================================================
-        // PHOTO GALLERY CONFIGURATION
-        // ========================================================================
-        // ADD YOUR PHOTO FILENAMES HERE
-        // - Photos are automatically sorted by filename (newest first)
-        // - Only the 12 MOST RECENT photos will be displayed
-        // - You can add as many filenames as you want to this list
-        // - The gallery will automatically show only the 12 newest
-        // - Name format: YYYY-MM-DD.jpg (e.g., 2026-03-17.jpg)
-        // ========================================================================
-        
         const photoFilenames = [
-            '2026-05-12.jpg',
-            '2026-05-10.jpg',
-            '2026-05-01.jpg',
-            '2026-05-03.jpg',
-            '2026-05-04.jpg',
-            '2026-05-08.jpg',
-            '2026-05-09.jpg',
-            '2025-12-14.jpg',
-            '2025-12-12.jpg',
-            '2026-04-03.jpg',
-            '2025-11-12.jpg',
-            '2025-10-29.jpg'
+            { src: '1.jpg',  caption: 'Lisbon, Portugal' },
+            { src: '2.jpg',  caption: 'Sintra, Portugal' },
+            { src: '3.jpg',  caption: '' }, 
+            { src: '4.jpg',  caption: 'Porto, Portugal' },
+            { src: '5.jpg' },              
+            { src: '6.jpg',  caption: 'Madrid, Spain' },
+            { src: '7.jpg',  caption: 'Seville, Spain' },
+            { src: '8.jpg',  caption: 'Tokyo, Japan' },
+            { src: '9.jpg' },
+            { src: '10.jpg', caption: 'Kyoto, Japan' },
+            { src: '11.jpg' },
+            { src: '12.jpg' }
         ];
+
+        const photoSources = photoFilenames.slice(0, 12);
         
-        // Automatically sort photos by filename (newest first) and take only the 12 most recent
-        const photoSources = photoFilenames.sort().reverse().slice(0, 12);
-        
-        // Build the gallery grid
         function buildGallery() {
             const galleryGrid = document.querySelector('.gallery-grid');
             galleryGrid.innerHTML = '';
@@ -1646,15 +1456,23 @@
             photoSources.forEach((photo, index) => {
                 const item = document.createElement('div');
                 item.className = 'gallery-item';
+                item.tabIndex = 0;
                 item.onclick = () => openLightbox(index);
                 
                 const img = document.createElement('img');
-                img.src = photo;
-                img.alt = `Photo from ${photo.replace('.jpg', '')}`;
+                img.src = photo.src;
+                img.alt = photo.caption || `Photo ${index + 1}`;
                 img.loading = 'lazy';
                 
                 const overlay = document.createElement('div');
                 overlay.className = 'gallery-overlay';
+                
+                if (photo.caption && photo.caption.trim() !== '') {
+                    const caption = document.createElement('span');
+                    caption.className = 'gallery-caption';
+                    caption.textContent = photo.caption;
+                    overlay.appendChild(caption);
+                }
                 
                 item.appendChild(img);
                 item.appendChild(overlay);
@@ -1668,30 +1486,26 @@
             const lightboxImg = document.getElementById('lightbox-img');
             const counter = document.getElementById('lightbox-counter');
             
-            // Show lightbox immediately
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
             
-            // Clear previous image and show loading state
             lightboxImg.style.opacity = '0.3';
             lightboxImg.alt = 'Loading...';
             
-            // Create new image to preload
+            const current = photoSources[currentPhotoIndex];
             const newImg = new Image();
             newImg.onload = function() {
-                lightboxImg.src = photoSources[currentPhotoIndex];
+                lightboxImg.src = current.src;
                 lightboxImg.style.opacity = '1';
-                lightboxImg.alt = `Photo from ${photoSources[currentPhotoIndex].replace('.jpg', '')}`;
+                lightboxImg.alt = current.caption || `Photo ${currentPhotoIndex + 1}`;
             };
             newImg.onerror = function() {
                 lightboxImg.alt = 'Error loading image';
-                console.error('Failed to load image:', photoSources[currentPhotoIndex]);
+                console.error('Failed to load image:', current.src);
             };
-            newImg.src = photoSources[currentPhotoIndex];
+            newImg.src = current.src;
             
             counter.textContent = `${currentPhotoIndex + 1} / ${photoSources.length}`;
-            
-            // Preload adjacent images for smoother navigation
             preloadAdjacentImages(currentPhotoIndex);
         }
 
@@ -1704,7 +1518,6 @@
         function changePhoto(direction) {
             currentPhotoIndex += direction;
             
-            // Loop around
             if (currentPhotoIndex < 0) {
                 currentPhotoIndex = photoSources.length - 1;
             } else if (currentPhotoIndex >= photoSources.length) {
@@ -1714,29 +1527,25 @@
             const lightboxImg = document.getElementById('lightbox-img');
             const counter = document.getElementById('lightbox-counter');
             
-            // Show loading state
             lightboxImg.style.opacity = '0.3';
             
-            // Preload new image
+            const current = photoSources[currentPhotoIndex];
             const newImg = new Image();
             newImg.onload = function() {
-                lightboxImg.src = photoSources[currentPhotoIndex];
+                lightboxImg.src = current.src;
                 lightboxImg.style.opacity = '1';
-                lightboxImg.alt = `Photo from ${photoSources[currentPhotoIndex].replace('.jpg', '')}`;
+                lightboxImg.alt = current.caption || `Photo ${currentPhotoIndex + 1}`;
             };
             newImg.onerror = function() {
                 lightboxImg.alt = 'Error loading image';
-                console.error('Failed to load image:', photoSources[currentPhotoIndex]);
+                console.error('Failed to load image:', current.src);
             };
-            newImg.src = photoSources[currentPhotoIndex];
+            newImg.src = current.src;
             
             counter.textContent = `${currentPhotoIndex + 1} / ${photoSources.length}`;
-            
-            // Preload adjacent images
             preloadAdjacentImages(currentPhotoIndex);
         }
 
-        // Keyboard navigation for lightbox
         document.addEventListener('keydown', (e) => {
             const lightbox = document.getElementById('lightbox');
             if (lightbox.classList.contains('active')) {
@@ -1750,20 +1559,16 @@
             }
         });
 
-        // Build gallery when page loads
         buildGallery();
 
-        // Preload adjacent images for smoother lightbox experience
         function preloadAdjacentImages(currentIndex) {
-            // Preload next image
             const nextIndex = (currentIndex + 1) % photoSources.length;
             const nextImg = new Image();
-            nextImg.src = photoSources[nextIndex];
+            nextImg.src = photoSources[nextIndex].src;
             
-            // Preload previous image
             const prevIndex = currentIndex === 0 ? photoSources.length - 1 : currentIndex - 1;
             const prevImg = new Image();
-            prevImg.src = photoSources[prevIndex];
+            prevImg.src = photoSources[prevIndex].src;
         }
     </script>
 </body>
