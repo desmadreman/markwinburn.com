@@ -171,8 +171,6 @@
             color: var(--cyan); 
         }
 
-
-
         /* Hamburger Menu */
         .hamburger {
             display: none;
@@ -272,6 +270,43 @@
             font-size: 1.2rem;
             color: var(--light);
             opacity: 0.8;
+        }
+
+        /* Location Flag Hover Tooltip */
+        .location-flag {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            font-size: calc(1.2rem + 4px);
+            margin-left: 0.2rem;
+        }
+
+        .location-flag::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%) translateY(5px);
+            background: var(--dark);
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+            padding: 0.3rem 0.6rem;
+            font-family: 'Silkscreen', cursive;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        .location-flag:hover::after,
+        .location-flag:focus::after {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
         }
         
         .headshot-container { 
@@ -1012,11 +1047,12 @@
                 <h1>Mark Winburn</h1>
                 <p class="hero-subtitle">Exploring the world as a Slomad
                     <br />&nbsp;<br />
-                    Current location: <span style="font-size: calc(1.1rem + 2px);">🇵🇹</span>
+                    Current location: <span class="location-flag" data-tooltip="Portugal" tabindex="0" aria-label="Portugal">🇵🇹</span>
+                </p>
             </div>
             <div class="hero-image">
                 <div class="headshot-container">
-                    <img src="headshot.jpeg" alt="Mark Winburn headshot" class="headshot">
+                    <img src="headshot.jpeg" alt="Mark Winburn" class="headshot">
                 </div>
             </div>
         </div>
@@ -1578,13 +1614,15 @@
         // ========================================================================
         // ADD YOUR PHOTO FILENAMES HERE
         // - Photos are automatically sorted by filename (newest first)
-        // - Only the 10 MOST RECENT photos will be displayed
+        // - Only the 12 MOST RECENT photos will be displayed
         // - You can add as many filenames as you want to this list
-        // - The gallery will automatically show only the 10 newest
+        // - The gallery will automatically show only the 12 newest
         // - Name format: YYYY-MM-DD.jpg (e.g., 2026-03-17.jpg)
         // ========================================================================
         
         const photoFilenames = [
+            '2026-05-12.jpg',
+            '2026-05-10.jpg',
             '2026-05-01.jpg',
             '2026-05-03.jpg',
             '2026-05-04.jpg',
@@ -1597,8 +1635,8 @@
             '2025-10-29.jpg'
         ];
         
-        // Automatically sort photos by filename (newest first) and take only the 10 most recent
-        const photoSources = photoFilenames.sort().reverse().slice(0, 10);
+        // Automatically sort photos by filename (newest first) and take only the 12 most recent
+        const photoSources = photoFilenames.sort().reverse().slice(0, 12);
         
         // Build the gallery grid
         function buildGallery() {
