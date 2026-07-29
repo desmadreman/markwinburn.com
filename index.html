@@ -415,9 +415,8 @@
             pointer-events: none;
         }
 
-        /* Show hover caption only if it contains text */
-        .gallery-item:hover .gallery-overlay:not(:empty),
-        .gallery-item:focus-within .gallery-overlay:not(:empty) {
+        .gallery-item:hover .gallery-overlay,
+        .gallery-item:focus-within .gallery-overlay {
             opacity: 1;
         }
 
@@ -684,7 +683,6 @@
                 font-size: 2rem;
             }
             
-            /* Show hamburger, hide menu by default on mobile */
             .hamburger {
                 display: flex;
             }
@@ -1437,20 +1435,21 @@
             { src: '2.jpg',  caption: 'Cupar, Scotland' },
             { src: '3.jpg',  caption: '' }, 
             { src: '4.jpg',  caption: 'Porto, Portugal' },
-            { src: '5.jpg' },              
+            { src: '5.jpg',  caption: '' },              
             { src: '6.jpg',  caption: 'Madrid, Spain' },
             { src: '7.jpg',  caption: 'Seville, Spain' },
             { src: '8.jpg',  caption: 'La Paz, Mexico' },
-            { src: '9.jpg' },
+            { src: '9.jpg',  caption: '' },
             { src: '10.jpg', caption: 'Not Kyoto, Japan' },
-            { src: '11.jpg' },
-            { src: '12.jpg' }
+            { src: '11.jpg', caption: '' },
+            { src: '12.jpg', caption: '' }
         ];
 
         const photoSources = photoFilenames.slice(0, 12);
         
         function buildGallery() {
             const galleryGrid = document.querySelector('.gallery-grid');
+            if (!galleryGrid) return;
             galleryGrid.innerHTML = '';
             
             photoSources.forEach((photo, index) => {
@@ -1464,18 +1463,20 @@
                 img.alt = photo.caption || `Photo ${index + 1}`;
                 img.loading = 'lazy';
                 
-                const overlay = document.createElement('div');
-                overlay.className = 'gallery-overlay';
-                
+                item.appendChild(img);
+
                 if (photo.caption && photo.caption.trim() !== '') {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'gallery-overlay';
+                    
                     const caption = document.createElement('span');
                     caption.className = 'gallery-caption';
                     caption.textContent = photo.caption;
+                    
                     overlay.appendChild(caption);
+                    item.appendChild(overlay);
                 }
                 
-                item.appendChild(img);
-                item.appendChild(overlay);
                 galleryGrid.appendChild(item);
             });
         }
@@ -1559,8 +1560,6 @@
             }
         });
 
-        buildGallery();
-
         function preloadAdjacentImages(currentIndex) {
             const nextIndex = (currentIndex + 1) % photoSources.length;
             const nextImg = new Image();
@@ -1569,6 +1568,13 @@
             const prevIndex = currentIndex === 0 ? photoSources.length - 1 : currentIndex - 1;
             const prevImg = new Image();
             prevImg.src = photoSources[prevIndex].src;
+        }
+
+        // Initialize gallery execution on load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', buildGallery);
+        } else {
+            buildGallery();
         }
     </script>
 </body>
