@@ -1461,7 +1461,6 @@
                 const img = document.createElement('img');
                 img.src = photo.src;
                 img.alt = photo.caption || `Photo ${index + 1}`;
-                img.loading = 'lazy';
                 
                 item.appendChild(img);
 
@@ -1570,11 +1569,20 @@
             prevImg.src = photoSources[prevIndex].src;
         }
 
+        function initGallery() {
+            buildGallery();
+            // Preload image cache in background
+            photoSources.forEach(photo => {
+                const img = new Image();
+                img.src = photo.src;
+            });
+        }
+
         // Initialize gallery execution on load
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', buildGallery);
+            document.addEventListener('DOMContentLoaded', initGallery);
         } else {
-            buildGallery();
+            initGallery();
         }
     </script>
 </body>
