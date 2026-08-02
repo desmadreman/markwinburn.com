@@ -146,6 +146,48 @@
   @media (max-width:520px){
     .panel{max-width:calc(100vw - 32px);}
   }
+
+  /* ---- clock widget ---- */
+  .clock-panel{
+    position:absolute;
+    top:16px;right:16px;
+    z-index:1000;
+    background:rgba(242,234,217,0.96);
+    border:1px solid var(--parchment-deep);
+    border-radius:10px;
+    padding:12px 18px;
+    text-align:center;
+    box-shadow:0 8px 24px rgba(27,42,58,0.18);
+  }
+  .clock-panel .time{
+    font-family:'JetBrains Mono',monospace;
+    font-size:1.3rem;
+    font-weight:600;
+    letter-spacing:0.02em;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .clock-panel .zone{
+    font-size:0.68rem;
+    color:#7a7060;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-top:2px;
+  }
+
+  /* ---- timezone dials ---- */
+  .tz-dial-wrap{display:flex;flex-direction:column;align-items:center;}
+  .tz-dial-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.6rem;
+    color:var(--ink);
+    background:rgba(242,234,217,0.9);
+    padding:1px 4px;
+    border-radius:3px;
+    white-space:nowrap;
+    margin-top:2px;
+    pointer-events:none;
+  }
 </style>
 </head>
 <body>
@@ -159,7 +201,14 @@
   <div class="legend">
     <label><input type="checkbox" id="toggleVisited" checked><span class="em">📍</span> Visited</label>
     <label><input type="checkbox" id="toggleLived" checked><span class="em">🏠</span> Lived</label>
+    <label><input type="checkbox" id="toggleTerminator" checked><span class="em">🌗</span> Day / Night</label>
+    <label><input type="checkbox" id="toggleTZ"><span class="em">🕐</span> Time zones</label>
   </div>
+</div>
+
+<div class="clock-panel">
+  <div class="time" id="clockTime">--:--:--</div>
+  <div class="zone" id="clockZone">Loading…</div>
 </div>
 
 <button class="add-btn" id="openAdmin">+ Add a place</button>
@@ -438,6 +487,215 @@ document.getElementById('toggleVisited').addEventListener('change', e=>{
 });
 document.getElementById('toggleLived').addEventListener('change', e=>{
   if(e.target.checked) livedLayer.addTo(map); else map.removeLayer(livedLayer);
+});
+
+/* =========================================================
+   LIVE CLOCK (device local time / time zone)
+   ========================================================= */
+function updateClock(){
+  const now = new Date();
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  const dateStr = now.toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
+  document.getElementById('clockTime').textContent = timeStr;
+  document.getElementById('clockZone').textContent = `${dateStr} · ${tz}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+/* =========================================================
+   DAY / NIGHT TERMINATOR
+   Light, decorative — uses a standard approximate solar
+   position formula, accurate to well within a degree.
+   ========================================================= */
+function subsolarPoint(date){
+  const rad = Math.PI/180;
+  const start = Date.UTC(date.getUTCFullYear(),0,1);
+  const dayOfYear = Math.floor((date.getTime()-start)/86400000) + 1;
+  const B = (360/365)*(dayOfYear-81)*rad;
+
+  // Solar declination (approx)
+  const decl = 23.44*Math.sin(B);
+
+  // Equation of time correction, in minutes (approx)
+  const eot = 9.87*Math.sin(2*B) - 7.53*Math.cos(B) - 1.5*Math.sin(B);
+
+  const utcHours = date.getUTCHours() + date.getUTCMinutes()/60 + date.getUTCSeconds()/3600;
+  const lng = (12 - (utcHours + eot/60)) * 15;
+  const lngNorm = ((lng + 540) % 360) - 180; // normalize to -180..180
+
+  return {lat:decl, lng:lngNorm};
+}
+
+function terminatorLatLngs(sub){
+  const rad = Math.PI/180, deg = 180/Math.PI;
+  const subLatR = sub.lat*rad;
+  const pts = [];
+  for(let lng=-180; lng<=180; lng+=2){
+    const dLng = (lng - sub.lng)*rad;
+    const lat = Math.atan2(-Math.cos(dLng), Math.tan(subLatR)) * deg;
+    pts.push([lat, lng]);
+  }
+  return pts;
+}
+
+let terminatorLine = null;
+let nightPolygon = null;
+
+function drawTerminator(){
+  const sub = subsolarPoint(new Date());
+  const curve = terminatorLatLngs(sub);
+
+  if(terminatorLine) map.removeLayer(terminatorLine);
+  if(nightPolygon) map.removeLayer(nightPolygon);
+
+  terminatorLine = L.polyline(curve, {
+    color:'#b8863b', weight:2.2, opacity:0.9, dashArray:'1,5'
+  });
+
+  // build the night-side polygon by closing the terminator curve
+  // through whichever pole is currently in darkness
+  const nightPole = sub.lat >= 0 ? -90 : 90;
+  const polyPts = curve.slice();
+  polyPts.push([nightPole, 180]);
+  polyPts.push([nightPole, -180]);
+
+  nightPolygon = L.polygon(polyPts, {
+    stroke:false, fillColor:'#0d1b2a', fillOpacity:0.24
+  });
+
+  if(document.getElementById('toggleTerminator').checked){
+    nightPolygon.addTo(map);
+    terminatorLine.addTo(map);
+  }
+}
+
+drawTerminator();
+setInterval(drawTerminator, 60000);
+
+document.getElementById('toggleTerminator').addEventListener('change', e=>{
+  if(e.target.checked){
+    nightPolygon.addTo(map);
+    terminatorLine.addTo(map);
+  } else {
+    map.removeLayer(nightPolygon);
+    map.removeLayer(terminatorLine);
+  }
+});
+
+/* =========================================================
+   TIME ZONES — actual boundaries (not straight meridians),
+   from a simplified real-world timezone shape dataset,
+   plus a small analog dial showing current time per zone.
+   ========================================================= */
+let tzLayer = L.layerGroup();      // boundary polygons
+let dialLayer = L.layerGroup();    // analog clock dials
+let tzLoaded = false;
+const dialMarkers = []; // {marker, offset}
+
+function formatOffset(off){
+  const sign = off < 0 ? '−' : '+';
+  const abs = Math.abs(off);
+  const h = Math.floor(abs);
+  const m = Math.round((abs - h) * 60);
+  return `UTC${sign}${h}${m ? ':' + String(m).padStart(2,'0') : ''}`;
+}
+
+function dialIcon(offset){
+  const now = new Date();
+  const shifted = new Date(now.getTime() + offset*3600000);
+  const hrs = shifted.getUTCHours() % 12;
+  const mins = shifted.getUTCMinutes();
+  const hourDeg = (hrs + mins/60) * 30;
+  const minDeg = mins * 6;
+
+  const hand = (deg, len) => {
+    const r = deg * Math.PI/180;
+    return [17 + len*Math.sin(r), 17 - len*Math.cos(r)];
+  };
+  const [hx,hy] = hand(hourDeg, 8);
+  const [mx,my] = hand(minDeg, 12.5);
+
+  const ticks = [0,90,180,270].map(d=>{
+    const r = d*Math.PI/180;
+    const x1 = 17 + 12*Math.sin(r), y1 = 17 - 12*Math.cos(r);
+    const x2 = 17 + 14.5*Math.sin(r), y2 = 17 - 14.5*Math.cos(r);
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#b8863b" stroke-width="1.5" stroke-linecap="round"/>`;
+  }).join('');
+
+  const html = `
+    <div class="tz-dial-wrap">
+      <svg width="34" height="34" viewBox="0 0 34 34">
+        <circle cx="17" cy="17" r="15.5" fill="#fffdf8" stroke="#1b2a3a" stroke-width="1.6"/>
+        ${ticks}
+        <line x1="17" y1="17" x2="${hx}" y2="${hy}" stroke="#1b2a3a" stroke-width="2.1" stroke-linecap="round"/>
+        <line x1="17" y1="17" x2="${mx}" y2="${my}" stroke="#9c3d3d" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="17" cy="17" r="1.5" fill="#1b2a3a"/>
+      </svg>
+      <div class="tz-dial-label">${formatOffset(offset)}</div>
+    </div>`;
+
+  return L.divIcon({className:'', html, iconSize:[46,50], iconAnchor:[23,25]});
+}
+
+function updateDials(){
+  dialMarkers.forEach(d => d.marker.setIcon(dialIcon(d.offset)));
+}
+
+function tzFillColor(offset){
+  // alternate two subtle tones so neighboring zones read as distinct patches
+  return (Math.round(offset*4) % 2 === 0) ? '#b8863b' : '#3f5d4e';
+}
+
+async function loadTimeZones(){
+  if(tzLoaded) return;
+  try{
+    const res = await fetch('https://cdn.jsdelivr.net/gh/treyerl/timezones@master/timezones_wVVG8.geojson');
+    const geo = await res.json();
+
+    const offsets = new Set();
+
+    L.geoJSON(geo, {
+      style: f => {
+        const off = parseFloat(f.properties.name);
+        if(Number.isFinite(off)) offsets.add(off);
+        return {
+          color:'#1b2a3a', weight:1.1, opacity:0.55,
+          fillColor: Number.isFinite(off) ? tzFillColor(off) : '#7a7060',
+          fillOpacity:0.07
+        };
+      }
+    }).addTo(tzLayer);
+
+    // NOTE: this dataset has one known corrupted entry (properties.name
+    // is a non-numeric placeholder). Number.isFinite above filters it
+    // out before it ever reaches the marker loop, so one bad shape
+    // can't silently abort every dial after it.
+    offsets.forEach(off => {
+      const lngRaw = off*15;
+      const lng = ((lngRaw + 540) % 360) - 180;
+      const marker = L.marker([80, lng], {icon:dialIcon(off), interactive:false});
+      dialMarkers.push({marker, offset:off});
+      marker.addTo(dialLayer);
+    });
+
+    tzLoaded = true;
+  }catch(e){
+    console.error('Time zone layer failed to load', e);
+  }
+}
+
+setInterval(updateDials, 30000);
+
+document.getElementById('toggleTZ').addEventListener('change', async e=>{
+  if(e.target.checked){
+    await loadTimeZones();
+    tzLayer.addTo(map);
+    dialLayer.addTo(map);
+  } else {
+    map.removeLayer(tzLayer);
+    map.removeLayer(dialLayer);
+  }
 });
 
 /* ---------- Admin modal logic ---------- */
