@@ -280,7 +280,7 @@
       <div class="admin-list" id="adminList"></div>
 
       <hr class="divider">
-      <button class="btn btn-secondary" id="exportBtn" type="button">Export all data</button>
+      <button class="btn btn-secondary" id="exportBtn" type="button">Export full HTML file</button>
       <button class="btn btn-ghost" id="closeAdmin" type="button">Close</button>
     </div>
 
@@ -297,9 +297,6 @@ const ADMIN_PASSWORD = "bingobango";
 
 /* =========================================================
    BASE DATA
-   Add more here any time and re-upload, or use the in-page
-   "Add a place" form (saves to this browser only until you
-   export and paste back in). 
    ========================================================= */
 const VISITED = [
   {name:"Boone, North Carolina", lat:36.2168, lng:-81.6746},
@@ -512,8 +509,6 @@ setInterval(updateClock, 1000);
 
 /* =========================================================
    DAY / NIGHT TERMINATOR
-   Light, decorative — uses a standard approximate solar
-   position formula, accurate to well within a degree.
    ========================================================= */
 function subsolarPoint(date){
   const rad = Math.PI/180;
@@ -521,15 +516,12 @@ function subsolarPoint(date){
   const dayOfYear = Math.floor((date.getTime()-start)/86400000) + 1;
   const B = (360/365)*(dayOfYear-81)*rad;
 
-  // Solar declination (approx)
   const decl = 23.44*Math.sin(B);
-
-  // Equation of time correction, in minutes (approx)
   const eot = 9.87*Math.sin(2*B) - 7.53*Math.cos(B) - 1.5*Math.sin(B);
 
   const utcHours = date.getUTCHours() + date.getUTCMinutes()/60 + date.getUTCSeconds()/3600;
   const lng = (12 - (utcHours + eot/60)) * 15;
-  const lngNorm = ((lng + 540) % 360) - 180; // normalize to -180..180
+  const lngNorm = ((lng + 540) % 360) - 180;
 
   return {lat:decl, lng:lngNorm};
 }
@@ -560,8 +552,6 @@ function drawTerminator(){
     color:'#b8863b', weight:2.2, opacity:0.9, dashArray:'1,5'
   });
 
-  // build the night-side polygon by closing the terminator curve
-  // through whichever pole is currently in darkness
   const nightPole = sub.lat >= 0 ? -90 : 90;
   const polyPts = curve.slice();
   polyPts.push([nightPole, 180]);
@@ -591,14 +581,12 @@ document.getElementById('toggleTerminator').addEventListener('change', e=>{
 });
 
 /* =========================================================
-   TIME ZONES — actual boundaries (not straight meridians),
-   from a simplified real-world timezone shape dataset,
-   plus a small analog dial showing current time per zone.
+   TIME ZONES
    ========================================================= */
-let tzLayer = L.layerGroup();      // boundary polygons
-let dialLayer = L.layerGroup();    // analog clock dials
+let tzLayer = L.layerGroup();
+let dialLayer = L.layerGroup();
 let tzLoaded = false;
-const dialMarkers = []; // {marker, offset}
+const dialMarkers = [];
 
 function formatOffset(off){
   const sign = off < 0 ? '−' : '+';
@@ -650,7 +638,6 @@ function updateDials(){
 }
 
 function tzFillColor(offset){
-  // alternate two subtle tones so neighboring zones read as distinct patches
   return (Math.round(offset*4) % 2 === 0) ? '#b8863b' : '#3f5d4e';
 }
 
@@ -674,10 +661,6 @@ async function loadTimeZones(){
       }
     }).addTo(tzLayer);
 
-    // NOTE: this dataset has one known corrupted entry (properties.name
-    // is a non-numeric placeholder). Number.isFinite above filters it
-    // out before it ever reaches the marker loop, so one bad shape
-    // can't silently abort every dial after it.
     offsets.forEach(off => {
       const lngRaw = off*15;
       const lng = ((lngRaw + 540) % 360) - 180;
@@ -827,15 +810,28 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
     return `  {${parts.join(', ')}}`;
   }).join(',\n');
 
-  const output = `const VISITED = [\n${fmt(allVisited)}\n];\n\nconst LIVED = [\n${fmt(allLived)}\n];`;
+  const newVisitedStr = `const VISITED = [\n${fmt(allVisited)}\n];`;
+  const newLivedStr = `const LIVED = [\n${fmt(allLived)}\n];`;
 
-  const blob = new Blob([output], {type:'text/plain'});
+  // Capture full current page source
+  let htmlContent = document.documentElement.outerHTML;
+
+  // Replace old array definitions with newly updated datasets
+  htmlContent = htmlContent.replace(/const VISITED = \[[\s\S]*?\];/, newVisitedStr);
+  htmlContent = htmlContent.replace(/const LIVED = \[[\s\S]*?\];/, newLivedStr);
+
+  // Trigger full HTML file download
+  const blob = new Blob(['<!DOCTYPE html>\n' + htmlContent], {type:'text/html'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'travel-map-data.txt';
+  a.download = 'travel-map.html';
   a.click();
   URL.revokeObjectURL(url);
+
+  // Reset local storage cache to eliminate duplicate rendering
+  localStorage.removeItem('travelMapCustomPins');
+  renderAll();
 });
 
 renderAll();
