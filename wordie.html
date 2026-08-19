@@ -75,7 +75,7 @@
             gap: 14px;
         }
 
-        .new-puzzle-trigger, .solver-trigger {
+        .new-puzzle-trigger {
             background: none;
             border: none;
             color: var(--color-muted);
@@ -87,7 +87,7 @@
             padding: 0;
         }
 
-        .new-puzzle-trigger:hover, .solver-trigger:hover {
+        .new-puzzle-trigger:hover {
             text-decoration: underline;
             color: #ffffff;
         }
@@ -176,7 +176,7 @@
         .key.present { background-color: var(--color-present); }
         .key.absent { background-color: var(--color-absent); }
 
-        #modal, #solver-modal {
+        #modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -187,7 +187,7 @@
             backdrop-filter: blur(4px);
         }
 
-        .modal-content, .solver-modal-content {
+        .modal-content {
             background-color: var(--color-surface);
             border: 1px solid var(--color-tile-border);
             padding: 24px;
@@ -271,7 +271,7 @@
         </div>
     </div>
 
-    <div id="toast">Not in word list</div>
+    <div id="toast">Loading dictionary...</div>
 
     <div id="modal">
         <div class="modal-content">
@@ -286,27 +286,17 @@
     </div>
 
     <script>
-        const WORDS = [
-            "APPLE", "BEACH", "BRAIN", "BREAD", "BREAK", "BROWN", "CHAIR", "CHEST",
-            "CHIEF", "CHILD", "CLOCK", "CLOUD", "DANCE", "DREAM", "DRIVE", "EARTH",
-            "ENEMY", "FIELD", "FINAL", "FLOOR", "FOCUS", "FRONT", "FRUIT", "GLASS",
-            "GRANT", "GRASS", "GREEN", "GROUP", "GUIDE", "HEART", "HEAVY", "HORSE",
-            "HOUSE", "IMAGE", "INDEX", "INPUT", "JUDGE", "KNIFE", "LIGHT", "LIMIT",
-            "LUNCH", "MAJOR", "MATCH", "METAL", "MODEL", "MONEY", "MONTH", "MOTOR",
-            "MOUTH", "MUSIC", "NIGHT", "NOISE", "NORTH", "NUMBER", "OFFER", "ORDER",
-            "OTHER", "PAPER", "PARTY", "PEACE", "PHONE", "PLANT", "PLATE", "POINT",
-            "POWER", "PRESS", "PRICE", "PRIDE", "PRIZE", "PROOF", "QUEEN", "RADIO",
-            "RANGE", "RATIO", "REPLY", "RIGHT", "RIVER", "ROUND", "ROUTE", "SCALE",
-            "SCENE", "SCOPE", "SCORE", "SENSE", "SHAPE", "SHARE", "SHEET", "SHIFT",
-            "SHIRT", "SHOCK", "SIGHT", "SIMON", "SKILL", "SLEEP", "SMILE", "SMOKE",
-            "SOUND", "SOUTH", "SPACE", "SPEED", "STAFF", "STAGE", "START", "STATE",
-            "STEAM", "STEEL", "STOCK", "STONE", "STORE", "STUDY", "STYLE", "SUGAR",
-            "TABLE", "TASTE", "TERRY", "THEME", "THING", "TITLE", "TOTAL", "TOUCH",
-            "TOWER", "TRACK", "TRADE", "TRAIN", "TREND", "TRIAL", "TRUST", "TRUTH",
-            "UNCLE", "UNION", "UNITY", "VALUE", "VIDEO", "VISIT", "VOICE", "WASTE",
-            "WATCH", "WATER", "WHILE", "WHITE", "WHOLE", "WOMAN", "WORLD", "YOUTH"
+        // Online dictionary source: Official Wordle allowed words list
+        const ONLINE_DICTIONARY_URL = "https://raw.githubusercontent.com/tabatkins/wordle-list/main/words";
+
+        // Fallback list in case network/offline occurs
+        const FALLBACK_WORDS = [
+            "APPLE", "BEACH", "CLEAN", "DRIVE", "EARTH", "FIELD", "GLASS", "HOUSE", 
+            "IMAGE", "JUDGE", "LIGHT", "MATCH", "NIGHT", "ORDER", "PAPER", "PIOUS", 
+            "QUEEN", "RIGHT", "SMILE", "TRAIN", "UNION", "VALUE", "WATER", "YOUTH"
         ];
 
+        let WORDS = [];
         let targetWord = "";
         let currentRow = 0;
         let currentTile = 0;
@@ -315,6 +305,26 @@
 
         const grid = document.getElementById("grid");
         const toast = document.getElementById("toast");
+
+        async function fetchOnlineDictionary() {
+            showToast("Loading online dictionary...");
+            try {
+                const response = await fetch(ONLINE_DICTIONARY_URL);
+                if (!response.ok) throw new Error("Failed to fetch dictionary");
+                
+                const text = await response.text();
+                WORDS = text
+                    .split("\n")
+                    .map(w => w.trim().toUpperCase())
+                    .filter(w => w.length === 5);
+
+                resetGame();
+            } catch (err) {
+                console.warn("Could not reach online dictionary. Falling back to internal list.", err);
+                WORDS = FALLBACK_WORDS;
+                resetGame();
+            }
+        }
 
         function initGrid() {
             grid.innerHTML = "";
@@ -354,7 +364,7 @@
         }
 
         function handleInput(key) {
-            if (gameOver) return;
+            if (gameOver || WORDS.length === 0) return;
 
             const cleanKey = key.toLowerCase();
 
@@ -473,6 +483,7 @@
         }
 
         function resetGame() {
+            if (WORDS.length === 0) return;
             targetWord = WORDS[Math.floor(Math.random() * WORDS.length)];
             currentRow = 0;
             currentTile = 0;
@@ -489,8 +500,8 @@
             else if (/^[a-zA-Z]$/.test(e.key)) handleInput(e.key);
         });
 
-        // Initialize puzzle
-        resetGame();
+        // Initialize puzzle by fetching word list online
+        fetchOnlineDictionary();
     </script>
 </body>
 </html>
