@@ -75,7 +75,7 @@
             gap: 14px;
         }
 
-        .new-puzzle-trigger {
+        .new-puzzle-trigger, .solver-trigger {
             background: none;
             border: none;
             color: var(--color-muted);
@@ -87,7 +87,7 @@
             padding: 0;
         }
 
-        .new-puzzle-trigger:hover {
+        .new-puzzle-trigger:hover, .solver-trigger:hover {
             text-decoration: underline;
             color: #ffffff;
         }
@@ -176,7 +176,7 @@
         .key.present { background-color: var(--color-present); }
         .key.absent { background-color: var(--color-absent); }
 
-        #modal {
+        #modal, #solver-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -186,6 +186,8 @@
             z-index: 10;
             backdrop-filter: blur(4px);
         }
+
+        #solver-modal { z-index: 15; }
 
         .modal-content {
             background-color: var(--color-surface);
@@ -197,6 +199,174 @@
             width: 85%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
+
+        .solver-modal-content {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-tile-border);
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 540px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-sizing: border-box;
+        }
+
+        .solver-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--color-tile-border);
+            padding-bottom: 10px;
+        }
+
+        .solver-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .solver-close-btn {
+            background: none;
+            border: none;
+            color: var(--color-muted);
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .solver-section-card {
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-tile-border);
+            border-radius: 8px;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .solver-section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .solver-section-title::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .solver-title-green::before { background-color: var(--color-correct); }
+        .solver-title-yellow::before { background-color: var(--color-present); }
+        .solver-title-gray::before { background-color: var(--color-absent); }
+
+        .solver-row-inputs {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 6px;
+        }
+
+        .solver-tile-input {
+            background-color: var(--color-surface);
+            border: 2px solid var(--color-tile-border);
+            color: #ffffff;
+            border-radius: 4px;
+            height: 44px;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            outline: none;
+        }
+
+        .solver-tile-input:focus { border-color: var(--theme-accent); }
+        .solver-correct-input { border-color: var(--color-correct); }
+        .solver-exclude-input { border-color: var(--color-present); }
+
+        .solver-text-box-input {
+            width: 100%;
+            background-color: var(--color-surface);
+            border: 2px solid var(--color-tile-border);
+            color: #ffffff;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .solver-results-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-gap: 12px;
+        }
+
+        .solver-results-box {
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-tile-border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .solver-results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .solver-results-item {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-tile-border);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .solver-summary-banner {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--color-muted);
+        }
+
+        .solver-btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 12px;
+        }
+
+        .solver-btn {
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            font-family: inherit;
+        }
+        .solver-btn-sync { background-color: var(--theme-accent); }
+        .solver-btn-clear { background-color: #c62828; }
 
         .word-reveal {
             font-size: 1.4rem;
@@ -258,6 +428,7 @@
         <h1>WORDIE</h1>
         <div class="header-right-controls">
             <button class="new-puzzle-trigger" onclick="resetGame()">new puzzle</button>
+            <button class="solver-trigger" onclick="openSolver()">solver</button>
         </div>
         <div id="difficulty-banner">Word Puzzle</div>
     </header>
@@ -285,16 +456,62 @@
         </div>
     </div>
 
-    <script>
-        // Online dictionary source: Official Wordle allowed words list
-        const ONLINE_DICTIONARY_URL = "https://raw.githubusercontent.com/tabatkins/wordle-list/main/words";
+    <!-- Solver Modal -->
+    <div id="solver-modal">
+        <div class="solver-modal-content">
+            <div class="solver-header">
+                <h2>WORDIE ASSISTANT</h2>
+                <button class="solver-close-btn" onclick="closeSolver()">&times;</button>
+            </div>
 
-        // Fallback list in case network/offline occurs
-        const FALLBACK_WORDS = [
-            "APPLE", "BEACH", "CLEAN", "DRIVE", "EARTH", "FIELD", "GLASS", "HOUSE", 
-            "IMAGE", "JUDGE", "LIGHT", "MATCH", "NIGHT", "ORDER", "PAPER", "PIOUS", 
-            "QUEEN", "RIGHT", "SMILE", "TRAIN", "UNION", "VALUE", "WATER", "YOUTH"
-        ];
+            <div id="solver-summary" class="solver-summary-banner">Ready to solve</div>
+
+            <div class="solver-section-card">
+                <div class="solver-section-title solver-title-green">Correct Letters (Green)</div>
+                <div class="solver-row-inputs">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="0">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="1">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="2">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="3">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="4">
+                </div>
+            </div>
+
+            <div class="solver-section-card">
+                <div class="solver-section-title solver-title-yellow">Present Letters, Excluded Slots (Yellow)</div>
+                <div class="solver-row-inputs">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="0" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="1" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="2" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="3" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="4" placeholder="ø">
+                </div>
+            </div>
+
+            <div class="solver-section-card">
+                <div class="solver-section-title solver-title-gray">Dead Letters (Gray)</div>
+                <input type="text" id="solver-absent-letters" class="solver-text-box-input" placeholder="e.g. AEIO">
+            </div>
+
+            <div class="solver-results-container">
+                <div class="solver-results-box">
+                    <div class="solver-section-title" style="color: #4caf50;">Matching Words</div>
+                    <ul id="solver-possible-answers" class="solver-results-list">
+                        <li style="color: var(--color-muted); font-size: 0.8rem;">Syncing...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="solver-btn-row">
+                <button class="solver-btn solver-btn-sync" onclick="syncSolverFromBoard()">Sync Board Data</button>
+                <button class="solver-btn solver-btn-clear" onclick="clearSolverFields()">Clear Solver</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ONLINE_DICTIONARY_URL = "https://raw.githubusercontent.com/tabatkins/wordle-list/main/words";
+        const FALLBACK_WORDS = ["APPLE", "BEACH", "CLEAN", "DRIVE", "EARTH", "FIELD", "GLASS", "HOUSE", "PIOUS"];
 
         let WORDS = [];
         let targetWord = "";
@@ -310,17 +527,11 @@
             showToast("Loading online dictionary...");
             try {
                 const response = await fetch(ONLINE_DICTIONARY_URL);
-                if (!response.ok) throw new Error("Failed to fetch dictionary");
-                
+                if (!response.ok) throw new Error("Failed to fetch");
                 const text = await response.text();
-                WORDS = text
-                    .split("\n")
-                    .map(w => w.trim().toUpperCase())
-                    .filter(w => w.length === 5);
-
+                WORDS = text.split("\n").map(w => w.trim().toUpperCase()).filter(w => w.length === 5);
                 resetGame();
             } catch (err) {
-                console.warn("Could not reach online dictionary. Falling back to internal list.", err);
                 WORDS = FALLBACK_WORDS;
                 resetGame();
             }
@@ -365,22 +576,16 @@
 
         function handleInput(key) {
             if (gameOver || WORDS.length === 0) return;
-
             const cleanKey = key.toLowerCase();
 
-            if (cleanKey === "enter") {
-                submitGuess();
-            } else if (cleanKey === "backspace" || cleanKey === "back") {
-                deleteLetter();
-            } else if (/^[a-z]$/.test(cleanKey)) {
-                addLetter(cleanKey.toUpperCase());
-            }
+            if (cleanKey === "enter") submitGuess();
+            else if (cleanKey === "backspace" || cleanKey === "back") deleteLetter();
+            else if (/^[a-z]$/.test(cleanKey)) addLetter(cleanKey.toUpperCase());
         }
 
         function addLetter(letter) {
             if (currentTile < 5) {
-                const tile = document.getElementById(`tile-${currentRow}-${currentTile}`);
-                tile.textContent = letter;
+                document.getElementById(`tile-${currentRow}-${currentTile}`).textContent = letter;
                 guesses[currentRow] += letter;
                 currentTile++;
             }
@@ -389,24 +594,15 @@
         function deleteLetter() {
             if (currentTile > 0) {
                 currentTile--;
-                const tile = document.getElementById(`tile-${currentRow}-${currentTile}`);
-                tile.textContent = "";
+                document.getElementById(`tile-${currentRow}-${currentTile}`).textContent = "";
                 guesses[currentRow] = guesses[currentRow].slice(0, -1);
             }
         }
 
         function submitGuess() {
             const guess = guesses[currentRow];
-            if (guess.length !== 5) {
-                showToast("Not enough letters");
-                return;
-            }
-
-            if (!WORDS.includes(guess)) {
-                showToast("Not in word list");
-                return;
-            }
-
+            if (guess.length !== 5) { showToast("Not enough letters"); return; }
+            if (!WORDS.includes(guess)) { showToast("Not in word list"); return; }
             evaluateGuess(guess);
         }
 
@@ -415,15 +611,10 @@
             const guessArr = guess.split("");
             const status = Array(5).fill("absent");
 
-            // Match Greens
             guessArr.forEach((char, i) => {
-                if (char === targetArr[i]) {
-                    status[i] = "correct";
-                    targetArr[i] = null;
-                }
+                if (char === targetArr[i]) { status[i] = "correct"; targetArr[i] = null; }
             });
 
-            // Match Yellows
             guessArr.forEach((char, i) => {
                 if (status[i] !== "correct" && targetArr.includes(char)) {
                     status[i] = "present";
@@ -431,33 +622,20 @@
                 }
             });
 
-            // Update UI
             guessArr.forEach((char, i) => {
                 const tile = document.getElementById(`tile-${currentRow}-${i}`);
                 const key = document.getElementById(`key-${char.toLowerCase()}`);
-                
                 tile.classList.add(status[i]);
                 if (key) {
-                    if (status[i] === "correct") {
-                        key.className = "key correct";
-                    } else if (status[i] === "present" && !key.classList.contains("correct")) {
-                        key.className = "key present";
-                    } else if (!key.classList.contains("correct") && !key.classList.contains("present")) {
-                        key.className = "key absent";
-                    }
+                    if (status[i] === "correct") key.className = "key correct";
+                    else if (status[i] === "present" && !key.classList.contains("correct")) key.className = "key present";
+                    else if (!key.classList.contains("correct") && !key.classList.contains("present")) key.className = "key absent";
                 }
             });
 
-            if (guess === targetWord) {
-                gameOver = true;
-                showModal("Splendid!", false);
-            } else if (currentRow === 5) {
-                gameOver = true;
-                showModal("Game Over", true);
-            } else {
-                currentRow++;
-                currentTile = 0;
-            }
+            if (guess === targetWord) { gameOver = true; showModal("Splendid!", false); }
+            else if (currentRow === 5) { gameOver = true; showModal("Game Over", true); }
+            else { currentRow++; currentTile = 0; }
         }
 
         function showToast(msg) {
@@ -468,39 +646,114 @@
 
         function showModal(title, revealWord) {
             document.getElementById("modal-title").textContent = title;
-            const wordContainer = document.getElementById("modal-word-container");
+            const container = document.getElementById("modal-word-container");
             if (revealWord) {
-                wordContainer.style.display = "block";
+                container.style.display = "block";
                 document.getElementById("modal-word").textContent = targetWord;
-            } else {
-                wordContainer.style.display = "none";
-            }
+            } else container.style.display = "none";
             document.getElementById("modal").style.display = "flex";
         }
 
-        function closeModal() {
-            document.getElementById("modal").style.display = "none";
-        }
+        function closeModal() { document.getElementById("modal").style.display = "none"; }
 
         function resetGame() {
             if (WORDS.length === 0) return;
             targetWord = WORDS[Math.floor(Math.random() * WORDS.length)];
-            currentRow = 0;
-            currentTile = 0;
-            gameOver = false;
+            currentRow = 0; currentTile = 0; gameOver = false;
             guesses = Array(6).fill("");
-            closeModal();
-            initGrid();
-            initKeyboard();
+            closeModal(); initGrid(); initKeyboard();
         }
 
+        /* --- SOLVER LOGIC --- */
+        function openSolver() {
+            syncSolverFromBoard();
+            document.getElementById("solver-modal").style.display = "flex";
+        }
+
+        function closeSolver() { document.getElementById("solver-modal").style.display = "none"; }
+
+        function clearSolverFields() {
+            document.querySelectorAll(".solver-tile-input").forEach(i => i.value = "");
+            document.getElementById("solver-absent-letters").value = "";
+            runSolverFilter();
+        }
+
+        function syncSolverFromBoard() {
+            clearSolverFields();
+            let correct = Array(5).fill("");
+            let excludes = Array(5).fill("");
+            let absent = new Set();
+
+            for (let r = 0; r < currentRow; r++) {
+                const guess = guesses[r];
+                for (let c = 0; c < 5; c++) {
+                    const tile = document.getElementById(`tile-${r}-${c}`);
+                    const char = guess[c];
+                    if (tile.classList.contains("correct")) correct[c] = char;
+                    else if (tile.classList.contains("present")) excludes[c] += char;
+                    else if (tile.classList.contains("absent")) absent.add(char);
+                }
+            }
+
+            document.querySelectorAll(".solver-correct-input").forEach((inp, idx) => inp.value = correct[idx]);
+            document.querySelectorAll(".solver-exclude-input").forEach((inp, idx) => inp.value = excludes[idx]);
+            document.getElementById("solver-absent-letters").value = Array.from(absent).join("");
+            runSolverFilter();
+        }
+
+        function runSolverFilter() {
+            const correctInputs = Array.from(document.querySelectorAll(".solver-correct-input")).map(i => i.value.toUpperCase());
+            const excludeInputs = Array.from(document.querySelectorAll(".solver-exclude-input")).map(i => i.value.toUpperCase());
+            const absentLetters = document.getElementById("solver-absent-letters").value.toUpperCase().split("");
+
+            const allYellows = excludeInputs.join("").split("");
+
+            const filtered = WORDS.filter(w => {
+                // Check greens
+                for (let i = 0; i < 5; i++) {
+                    if (correctInputs[i] && w[i] !== correctInputs[i]) return false;
+                }
+                // Check yellows
+                for (let i = 0; i < 5; i++) {
+                    if (excludeInputs[i] && excludeInputs[i].includes(w[i])) return false;
+                }
+                for (let y of allYellows) {
+                    if (!w.includes(y)) return false;
+                }
+                // Check grays
+                for (let a of absentLetters) {
+                    if (w.includes(a) && !correctInputs.includes(a) && !allYellows.includes(a)) return false;
+                }
+                return true;
+            });
+
+            const list = document.getElementById("solver-possible-answers");
+            list.innerHTML = "";
+            document.getElementById("solver-summary").textContent = `${filtered.length} potential solutions remaining`;
+
+            filtered.slice(0, 30).forEach(word => {
+                const li = document.createElement("li");
+                li.className = "solver-results-item";
+                li.textContent = word;
+                list.appendChild(li);
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<li style="color: var(--color-muted); font-size: 0.8rem;">No matching words found</li>';
+            }
+        }
+
+        document.querySelectorAll(".solver-tile-input, #solver-absent-letters").forEach(elem => {
+            elem.addEventListener("input", runSolverFilter);
+        });
+
         document.addEventListener("keydown", (e) => {
+            if (document.getElementById("solver-modal").style.display === "flex") return;
             if (e.key === "Enter") handleInput("enter");
             else if (e.key === "Backspace") handleInput("backspace");
             else if (/^[a-zA-Z]$/.test(e.key)) handleInput(e.key);
         });
 
-        // Initialize puzzle by fetching word list online
         fetchOnlineDictionary();
     </script>
 </body>
