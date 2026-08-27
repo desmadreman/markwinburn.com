@@ -1,0 +1,23 @@
+name: Generate Dictionary JSON
+
+on:
+  workflow_dispatch: # Allows you to run this manually from the Actions tab
+
+jobs:
+  build-dictionary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download and format word list
+        run: |
+          curl -s "https://raw.githubusercontent.com/tabatkins/wordle-list/main/words" | jq -R . | jq -s . > dictionary.json
+
+      - name: Commit and push dictionary.json
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add dictionary.json
+          git commit -m "Generate full dictionary.json" || exit 0
+          git push
