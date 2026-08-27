@@ -8,15 +8,31 @@
         :root {
             --color-correct: #538d4e;
             --color-present: #b59f3b;
-            --color-absent: #3a3a3c;
-            --color-bg: #121213;
-            --color-surface: #1e1e1f;
-            --color-tile-border: #3a3a3c;
-            --color-tile-bg: #121213;
-            --color-text: #ffffff;
-            --color-key-bg: #818384;
+            --color-absent: #787c7e;
+            --color-bg: #ffffff;
+            --color-surface: #f6f7f8;
+            --color-tile-border: #d3d6da;
+            --color-tile-bg: #ffffff;
+            --color-text: #1a1a1b;
+            --color-key-bg: #d3d6da;
             --theme-accent: #4a90e2;
-            --color-muted: #818384;
+            --color-muted: #6a6d6e;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-correct: #538d4e;
+                --color-present: #b59f3b;
+                --color-absent: #3a3a3c;
+                --color-bg: #121213;
+                --color-surface: #1e1e1f;
+                --color-tile-border: #3a3a3c;
+                --color-tile-bg: #121213;
+                --color-text: #ffffff;
+                --color-key-bg: #818384;
+                --theme-accent: #4a90e2;
+                --color-muted: #818384;
+            }
         }
 
         body {
@@ -39,30 +55,17 @@
             width: 100%;
             text-align: center;
             padding: 14px 0;
-            background-color: rgba(18, 18, 19, 0.95);
-            backdrop-filter: blur(4px);
+            background-color: var(--color-bg);
             z-index: 5;
             position: relative;
         }
 
         h1 {
             margin: 0;
-            font-size: 2.4rem;
+            font-size: 2.2rem;
             letter-spacing: 4px;
             font-weight: 800;
-            background: linear-gradient(135deg, #ffffff 30%, #a1a1a1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             display: inline-block;
-        }
-
-        #difficulty-banner {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 4px;
-            font-weight: 600;
-            color: var(--color-muted);
         }
 
         .header-right-controls {
@@ -80,7 +83,7 @@
             border: none;
             color: var(--color-muted);
             font-size: 0.95rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: color 0.15s ease;
             font-family: inherit;
@@ -89,7 +92,7 @@
 
         .new-puzzle-trigger:hover, .solver-trigger:hover {
             text-decoration: underline;
-            color: #ffffff;
+            color: var(--color-text);
         }
 
         #game-container {
@@ -132,12 +135,11 @@
             font-weight: 700;
             text-transform: uppercase;
             box-sizing: border-box;
-            transition: transform 0.1s linear;
         }
 
-        .tile.correct { background-color: var(--color-correct); border-color: var(--color-correct); }
-        .tile.present { background-color: var(--color-present); border-color: var(--color-present); }
-        .tile.absent { background-color: var(--color-absent); border-color: var(--color-absent); }
+        .tile.correct { background-color: var(--color-correct); border-color: var(--color-correct); color: #ffffff; }
+        .tile.present { background-color: var(--color-present); border-color: var(--color-present); color: #ffffff; }
+        .tile.absent { background-color: var(--color-absent); border-color: var(--color-absent); color: #ffffff; }
 
         #keyboard {
             width: 100%;
@@ -168,19 +170,18 @@
             font-size: 1.1rem;
             cursor: pointer;
             text-transform: uppercase;
-            transition: background-color 0.2s ease;
         }
 
         .key.large { flex: 1.5; font-size: 0.85rem; }
-        .key.correct { background-color: var(--color-correct); }
-        .key.present { background-color: var(--color-present); }
-        .key.absent { background-color: var(--color-absent); }
+        .key.correct { background-color: var(--color-correct); color: #ffffff; }
+        .key.present { background-color: var(--color-present); color: #ffffff; }
+        .key.absent { background-color: var(--color-absent); color: #ffffff; }
 
         #modal, #solver-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.75);
+            background-color: rgba(0,0,0,0.6);
             justify-content: center;
             align-items: center;
             z-index: 10;
@@ -189,31 +190,23 @@
 
         #solver-modal { z-index: 15; }
 
-        .modal-content {
+        .modal-content, .solver-modal-content {
             background-color: var(--color-surface);
             border: 1px solid var(--color-tile-border);
             padding: 24px;
             border-radius: 12px;
-            text-align: center;
-            max-width: 400px;
-            width: 85%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 520px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-sizing: border-box;
         }
 
         .solver-modal-content {
-            background-color: var(--color-surface);
-            border: 1px solid var(--color-tile-border);
-            padding: 24px;
-            border-radius: 12px;
-            max-width: 540px;
-            width: 90%;
             max-height: 85vh;
             overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            box-sizing: border-box;
+            gap: 14px;
         }
 
         .solver-header {
@@ -226,9 +219,8 @@
 
         .solver-header h2 {
             margin: 0;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 800;
-            letter-spacing: 1px;
         }
 
         .solver-close-btn {
@@ -237,7 +229,6 @@
             color: var(--color-muted);
             font-size: 1.8rem;
             cursor: pointer;
-            line-height: 1;
         }
 
         .solver-section-card {
@@ -249,27 +240,13 @@
         }
 
         .solver-section-title {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 8px;
-            color: var(--color-text);
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            color: var(--color-muted);
         }
-
-        .solver-section-title::before {
-            content: '';
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-        }
-        .solver-title-green::before { background-color: var(--color-correct); }
-        .solver-title-yellow::before { background-color: var(--color-present); }
-        .solver-title-gray::before { background-color: var(--color-absent); }
 
         .solver-row-inputs {
             display: grid;
@@ -280,25 +257,21 @@
         .solver-tile-input {
             background-color: var(--color-surface);
             border: 2px solid var(--color-tile-border);
-            color: #ffffff;
+            color: var(--color-text);
             border-radius: 4px;
-            height: 44px;
+            height: 42px;
             text-align: center;
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 700;
             text-transform: uppercase;
             outline: none;
         }
 
-        .solver-tile-input:focus { border-color: var(--theme-accent); }
-        .solver-correct-input { border-color: var(--color-correct); }
-        .solver-exclude-input { border-color: var(--color-present); }
-
         .solver-text-box-input {
             width: 100%;
             background-color: var(--color-surface);
             border: 2px solid var(--color-tile-border);
-            color: #ffffff;
+            color: var(--color-text);
             border-radius: 4px;
             padding: 10px;
             font-size: 1rem;
@@ -311,8 +284,12 @@
 
         .solver-results-container {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr 1fr;
             grid-gap: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .solver-results-container { grid-template-columns: 1fr; }
         }
 
         .solver-results-box {
@@ -327,7 +304,7 @@
             padding: 0;
             margin: 0;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 6px;
         }
 
@@ -340,12 +317,8 @@
             font-size: 0.9rem;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-        }
-
-        .solver-summary-banner {
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--color-muted);
+            display: flex;
+            justify-content: space-between;
         }
 
         .solver-btn-row {
@@ -363,19 +336,9 @@
             cursor: pointer;
             text-transform: uppercase;
             font-size: 0.8rem;
-            font-family: inherit;
         }
         .solver-btn-sync { background-color: var(--theme-accent); }
         .solver-btn-clear { background-color: #c62828; }
-
-        .word-reveal {
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-            color: var(--theme-accent);
-            margin: 15px 0;
-            text-transform: uppercase;
-        }
 
         .btn {
             background-color: var(--theme-accent);
@@ -399,8 +362,8 @@
         #toast {
             visibility: hidden;
             min-width: 160px;
-            background-color: #f8f9fa;
-            color: #212529;
+            background-color: var(--color-text);
+            color: var(--color-bg);
             text-align: center;
             border-radius: 4px;
             padding: 12px 20px;
@@ -408,7 +371,6 @@
             z-index: 20;
             top: 10%;
             font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         #toast.show {
@@ -430,7 +392,6 @@
             <button class="new-puzzle-trigger" onclick="resetGame()">new puzzle</button>
             <button class="solver-trigger" onclick="openSolver()">solver</button>
         </div>
-        <div id="difficulty-banner">Word Puzzle</div>
     </header>
 
     <div id="game-container">
@@ -445,9 +406,11 @@
     <div id="toast">Loading dictionary...</div>
 
     <div id="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="text-align:center;">
             <h2 id="modal-title">Status</h2>
-            <div id="modal-word-container" style="display:none;">The word was: <div class="word-reveal" id="modal-word"></div></div>
+            <div id="modal-word-container" style="display:none; margin: 15px 0;">
+                The word was: <div style="font-size: 1.4rem; font-weight: 800; color: var(--theme-accent);" id="modal-word"></div>
+            </div>
             <p id="modal-message"></p>
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button class="btn btn-secondary" onclick="closeModal()">Close</button>
@@ -456,7 +419,6 @@
         </div>
     </div>
 
-    <!-- Solver Modal -->
     <div id="solver-modal">
         <div class="solver-modal-content">
             <div class="solver-header">
@@ -464,55 +426,54 @@
                 <button class="solver-close-btn" onclick="closeSolver()">&times;</button>
             </div>
 
-            <div id="solver-summary" class="solver-summary-banner">Ready to solve</div>
+            <div id="solver-summary" style="text-align:center; font-size: 0.8rem; color: var(--color-muted);">Ready</div>
 
             <div class="solver-section-card">
-                <div class="solver-section-title solver-title-green">Correct Letters (Green)</div>
+                <div class="solver-section-title">Correct Spot (Green)</div>
                 <div class="solver-row-inputs">
-                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="0">
-                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="1">
-                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="2">
-                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="3">
-                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input" data-pos="4">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input">
+                    <input type="text" maxlength="1" class="solver-tile-input solver-correct-input">
                 </div>
             </div>
 
             <div class="solver-section-card">
-                <div class="solver-section-title solver-title-yellow">Present Letters, Excluded Slots (Yellow)</div>
+                <div class="solver-section-title">Present, Wrong Spot (Yellow)</div>
                 <div class="solver-row-inputs">
-                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="0" placeholder="ø">
-                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="1" placeholder="ø">
-                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="2" placeholder="ø">
-                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="3" placeholder="ø">
-                    <input type="text" class="solver-tile-input solver-exclude-input" data-exclude="4" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" placeholder="ø">
+                    <input type="text" class="solver-tile-input solver-exclude-input" placeholder="ø">
                 </div>
             </div>
 
             <div class="solver-section-card">
-                <div class="solver-section-title solver-title-gray">Dead Letters (Gray)</div>
+                <div class="solver-section-title">Excluded Letters (Gray)</div>
                 <input type="text" id="solver-absent-letters" class="solver-text-box-input" placeholder="e.g. AEIO">
             </div>
 
             <div class="solver-results-container">
                 <div class="solver-results-box">
-                    <div class="solver-section-title" style="color: #4caf50;">Matching Words</div>
-                    <ul id="solver-possible-answers" class="solver-results-list">
-                        <li style="color: var(--color-muted); font-size: 0.8rem;">Syncing...</li>
-                    </ul>
+                    <div class="solver-section-title" style="color: var(--color-correct);">Most Probable Solutions</div>
+                    <ul id="solver-possible-answers" class="solver-results-list"></ul>
+                </div>
+                <div class="solver-results-box">
+                    <div class="solver-section-title" style="color: var(--theme-accent);">Best Next Eliminator Words</div>
+                    <ul id="solver-best-eliminators" class="solver-results-list"></ul>
                 </div>
             </div>
 
             <div class="solver-btn-row">
-                <button class="solver-btn solver-btn-sync" onclick="syncSolverFromBoard()">Sync Board Data</button>
-                <button class="solver-btn solver-btn-clear" onclick="clearSolverFields()">Clear Solver</button>
+                <button class="solver-btn solver-btn-sync" onclick="syncSolverFromBoard()">Sync Board</button>
+                <button class="solver-btn solver-btn-clear" onclick="clearSolverFields()">Clear</button>
             </div>
         </div>
     </div>
 
     <script>
-        const ONLINE_DICTIONARY_URL = "https://raw.githubusercontent.com/tabatkins/wordle-list/main/words";
-        const FALLBACK_WORDS = ["APPLE", "BEACH", "CLEAN", "DRIVE", "EARTH", "FIELD", "GLASS", "HOUSE", "PIOUS"];
-
         let WORDS = [];
         let targetWord = "";
         let currentRow = 0;
@@ -523,17 +484,17 @@
         const grid = document.getElementById("grid");
         const toast = document.getElementById("toast");
 
-        async function fetchOnlineDictionary() {
-            showToast("Loading online dictionary...");
+        // Fetch dictionary loaded dynamically into memory from dictionary.json
+        async function loadLocalDictionary() {
             try {
-                const response = await fetch(ONLINE_DICTIONARY_URL);
-                if (!response.ok) throw new Error("Failed to fetch");
-                const text = await response.text();
-                WORDS = text.split("\n").map(w => w.trim().toUpperCase()).filter(w => w.length === 5);
+                const response = await fetch('./dictionary.json');
+                if (!response.ok) throw new Error("JSON file not found");
+                const data = await response.json();
+                WORDS = data.map(w => w.trim().toUpperCase()).filter(w => w.length === 5);
                 resetGame();
             } catch (err) {
-                WORDS = FALLBACK_WORDS;
-                resetGame();
+                showToast("Run via local server to load JSON");
+                console.error("Could not fetch dictionary.json:", err);
             }
         }
 
@@ -664,7 +625,7 @@
             closeModal(); initGrid(); initKeyboard();
         }
 
-        /* --- SOLVER LOGIC --- */
+        /* --- ADVANCED SOLVER ALGORITHM --- */
         function openSolver() {
             syncSolverFromBoard();
             document.getElementById("solver-modal").style.display = "flex";
@@ -705,41 +666,71 @@
             const correctInputs = Array.from(document.querySelectorAll(".solver-correct-input")).map(i => i.value.toUpperCase());
             const excludeInputs = Array.from(document.querySelectorAll(".solver-exclude-input")).map(i => i.value.toUpperCase());
             const absentLetters = document.getElementById("solver-absent-letters").value.toUpperCase().split("");
-
             const allYellows = excludeInputs.join("").split("");
 
-            const filtered = WORDS.filter(w => {
-                // Check greens
+            // 1. Filter Possible Solutions
+            const solutions = WORDS.filter(w => {
                 for (let i = 0; i < 5; i++) {
                     if (correctInputs[i] && w[i] !== correctInputs[i]) return false;
                 }
-                // Check yellows
                 for (let i = 0; i < 5; i++) {
                     if (excludeInputs[i] && excludeInputs[i].includes(w[i])) return false;
                 }
                 for (let y of allYellows) {
                     if (!w.includes(y)) return false;
                 }
-                // Check grays
                 for (let a of absentLetters) {
                     if (w.includes(a) && !correctInputs.includes(a) && !allYellows.includes(a)) return false;
                 }
                 return true;
             });
 
-            const list = document.getElementById("solver-possible-answers");
-            list.innerHTML = "";
-            document.getElementById("solver-summary").textContent = `${filtered.length} potential solutions remaining`;
+            // Update Summary
+            document.getElementById("solver-summary").textContent = `${solutions.length} Possible Solutions Remaining`;
 
-            filtered.slice(0, 30).forEach(word => {
+            // Populate Possible Solutions Box
+            const solutionsList = document.getElementById("solver-possible-answers");
+            solutionsList.innerHTML = "";
+            solutions.slice(0, 10).forEach(w => {
                 const li = document.createElement("li");
                 li.className = "solver-results-item";
-                li.textContent = word;
-                list.appendChild(li);
+                li.textContent = w;
+                solutionsList.appendChild(li);
             });
 
-            if (filtered.length === 0) {
-                list.innerHTML = '<li style="color: var(--color-muted); font-size: 0.8rem;">No matching words found</li>';
+            // 2. Compute Best Next Words (Eliminators based on unique unrevealed letter coverage)
+            const eliminatorsList = document.getElementById("solver-best-eliminators");
+            eliminatorsList.innerHTML = "";
+
+            if (solutions.length <= 2) {
+                eliminatorsList.innerHTML = `<li class="solver-results-item" style="color: var(--color-muted);">Guess directly!</li>`;
+            } else {
+                // Find uncalculated letter frequencies across remaining solution space
+                let letterFreq = {};
+                solutions.forEach(w => {
+                    new Set(w.split("")).forEach(char => {
+                        letterFreq[char] = (letterFreq[char] || 0) + 1;
+                    });
+                });
+
+                // Score full dictionary words by how efficiently they divide the remaining search space
+                let scoredWords = WORDS.map(w => {
+                    let uniqueChars = new Set(w.split(""));
+                    let score = 0;
+                    uniqueChars.forEach(char => {
+                        if (letterFreq[char]) score += letterFreq[char];
+                    });
+                    return { word: w, score: score };
+                });
+
+                scoredWords.sort((a, b) => b.score - a.score);
+
+                scoredWords.slice(0, 5).forEach(item => {
+                    const li = document.createElement("li");
+                    li.className = "solver-results-item";
+                    li.innerHTML = `<span>${item.word}</span> <span style="font-size:0.75rem; color:var(--color-muted);">${item.score} pts</span>`;
+                    eliminatorsList.appendChild(li);
+                });
             }
         }
 
@@ -754,7 +745,7 @@
             else if (/^[a-zA-Z]$/.test(e.key)) handleInput(e.key);
         });
 
-        fetchOnlineDictionary();
+        loadLocalDictionary();
     </script>
 </body>
 </html>
