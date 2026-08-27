@@ -1,7 +1,11 @@
 name: Generate Dictionary JSON
 
 on:
-  workflow_dispatch: # Allows you to run this manually from the Actions tab
+  workflow_dispatch:
+
+# Grants the workflow write access to push changes back to the repo
+permissions:
+  contents: write
 
 jobs:
   build-dictionary:
@@ -21,3 +25,5 @@ jobs:
           git add dictionary.json
           git commit -m "Generate full dictionary.json" || exit 0
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
