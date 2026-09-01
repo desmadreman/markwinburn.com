@@ -290,17 +290,9 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 /* =========================================================
-   SHA-256 HASH OF ADMIN PASSWORD
-   Default corresponds to the password "bingobango"
+   ADMIN PASSWORD CONFIGURATION
    ========================================================= */
-const ADMIN_PASSWORD_HASH = "3b1b61922ddbc6ee4ce2585f6daec91f6305a2e7c4f1cbe81f62dd1b489d38c6";
-
-async function hashPassword(str) {
-  const buf = new TextEncoder().encode(str);
-  const hashBuf = await crypto.subtle.digest('SHA-256', buf);
-  const arr = Array.from(new Uint8Array(hashBuf));
-  return arr.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+const ADMIN_PASSWORD = "bingobango";
 
 /* =========================================================
    BASE DATA
@@ -717,10 +709,9 @@ document.getElementById('cancelLock').addEventListener('click', ()=> overlay.cla
 document.getElementById('closeAdmin').addEventListener('click', ()=> overlay.classList.remove('show'));
 overlay.addEventListener('click', e=>{ if(e.target === overlay) overlay.classList.remove('show'); });
 
-document.getElementById('unlockBtn').addEventListener('click', async ()=>{
+document.getElementById('unlockBtn').addEventListener('click', ()=>{
   const val = document.getElementById('pwInput').value;
-  const hash = await hashPassword(val);
-  if(hash === ADMIN_PASSWORD_HASH){
+  if(val === ADMIN_PASSWORD){
     unlocked = true;
     lockStep.style.display='none';
     formStep.style.display='block';
@@ -738,7 +729,11 @@ document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
   if(!q){ resultBox.innerHTML = ''; return; }
   resultBox.innerHTML = `<div class="geo-result">Searching…</div>`;
   try{
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`);
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`, {
+      headers: {
+        'User-Agent': 'TravelMapApp/1.0'
+      }
+    });
     const data = await res.json();
     if(data && data.length){
       const r = data[0];
