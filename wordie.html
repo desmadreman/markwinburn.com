@@ -19,6 +19,7 @@
             --color-muted: #6a6d6e;
         }
 
+        /* Automatic System Dark Mode Detection */
         @media (prefers-color-scheme: dark) {
             :root {
                 --color-correct: #538d4e;
@@ -53,20 +54,25 @@
         header {
             border-bottom: 1px solid var(--color-tile-border);
             width: 100%;
-            text-align: center;
-            padding: 14px 0;
+            height: 60px;
             background-color: var(--color-bg);
             z-index: 5;
-            position: relative;
-        }
-
-        .header-left-controls {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-sizing: border-box;
+        }
+
+        .header-left-controls, .header-right-controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 110px;
+        }
+
+        .header-right-controls {
+            justify-content: flex-end;
         }
 
         .home-link {
@@ -75,6 +81,7 @@
             font-size: 0.95rem;
             font-weight: 600;
             transition: color 0.15s ease;
+            white-space: nowrap;
         }
 
         .home-link:hover {
@@ -84,20 +91,11 @@
 
         h1 {
             margin: 0;
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             letter-spacing: 4px;
             font-weight: 800;
-            display: inline-block;
-        }
-
-        .header-right-controls {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            align-items: center;
-            gap: 14px;
+            text-align: center;
+            flex-grow: 1;
         }
 
         .new-puzzle-trigger, .solver-trigger {
@@ -110,6 +108,7 @@
             transition: color 0.15s ease;
             font-family: inherit;
             padding: 0;
+            white-space: nowrap;
         }
 
         .new-puzzle-trigger:hover, .solver-trigger:hover {
