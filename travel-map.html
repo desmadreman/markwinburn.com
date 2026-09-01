@@ -138,7 +138,6 @@
   .admin-list .pin-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee6d4;}
   .admin-list .pin-row button{background:none;border:none;color:var(--stamp-red);cursor:pointer;font-size:0.78rem;}
 
-  /* leaflet popup tweak */
   .leaflet-popup-content{font-family:'Inter',sans-serif;}
   .leaflet-popup-content b{font-family:'Fraunces',serif;font-size:1rem;}
   .pin-emoji{font-size:26px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.35));}
@@ -225,8 +224,8 @@
         <label for="pwInput">Password</label>
         <input type="password" id="pwInput" autocomplete="off">
       </div>
-      <button class="btn btn-primary" id="unlockBtn">Unlock</button>
-      <button class="btn btn-ghost" id="cancelLock">Cancel</button>
+      <button class="btn btn-primary" id="unlockBtn" type="button">Unlock</button>
+      <button class="btn btn-ghost" id="cancelLock" type="button">Cancel</button>
       <div class="msg err" id="lockMsg"></div>
     </div>
 
@@ -422,8 +421,10 @@ const LIVED = [
 
 const map = L.map('map', {zoomControl:false}).setView([35, -75], 3);
 L.control.zoom({position:'bottomleft'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+
+/* Standard OpenStreetMap tiles - completely free and no API key needed */
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 19
 }).addTo(map);
 
@@ -709,8 +710,8 @@ document.getElementById('cancelLock').addEventListener('click', ()=> overlay.cla
 document.getElementById('closeAdmin').addEventListener('click', ()=> overlay.classList.remove('show'));
 overlay.addEventListener('click', e=>{ if(e.target === overlay) overlay.classList.remove('show'); });
 
-document.getElementById('unlockBtn').addEventListener('click', ()=>{
-  const val = document.getElementById('pwInput').value;
+function attemptUnlock(){
+  const val = document.getElementById('pwInput').value.trim();
   if(val === ADMIN_PASSWORD){
     unlocked = true;
     lockStep.style.display='none';
@@ -718,9 +719,14 @@ document.getElementById('unlockBtn').addEventListener('click', ()=>{
   } else {
     document.getElementById('lockMsg').textContent = 'Incorrect password.';
   }
-});
+}
+
+document.getElementById('unlockBtn').addEventListener('click', attemptUnlock);
 document.getElementById('pwInput').addEventListener('keydown', e=>{
-  if(e.key === 'Enter') document.getElementById('unlockBtn').click();
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    attemptUnlock();
+  }
 });
 
 document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
