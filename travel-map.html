@@ -5,87 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Travel Map</title>
   
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body, html {
-      height: 100%;
-      width: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
-    }
-    #map {
-      height: 100vh;
-      width: 100vw;
-      z-index: 1;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { height: 100%; width: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    #map { height: 100vh; width: 100vw; z-index: 1; }
     .controls-panel {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.95);
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      max-width: 320px;
-      width: 100%;
+      position: absolute; top: 20px; right: 20px; z-index: 1000;
+      background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 320px; width: 100%;
     }
-    .controls-panel h2 {
-      font-size: 1.1rem;
-      margin-bottom: 10px;
-    }
-    .input-group {
-      margin-bottom: 10px;
-    }
-    .input-group label {
-      display: block;
-      font-size: 0.8rem;
-      margin-bottom: 4px;
-      color: #666;
-    }
-    .input-group input, .input-group select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 0.9rem;
-    }
-    .btn {
-      width: 100%;
-      padding: 8px 12px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      margin-top: 5px;
-    }
-    .btn:hover {
-      background: #0056b3;
-    }
-    .btn-secondary {
-      background: #6c757d;
-    }
-    .btn-secondary:hover {
-      background: #5a6268;
-    }
-    .admin-only {
-      display: none;
-    }
-    .status-msg {
-      font-size: 0.8rem;
-      margin-top: 8px;
-      color: #28a745;
-    }
+    .controls-panel h2 { font-size: 1.1rem; margin-bottom: 10px; }
+    .input-group { margin-bottom: 10px; }
+    .input-group label { display: block; font-size: 0.8rem; margin-bottom: 4px; color: #666; }
+    .input-group input, .input-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    .btn { width: 100%; padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+    .btn:hover { background: #0056b3; }
+    .btn-secondary { background: #6c757d; }
+    .admin-only { display: none; }
+    .status-msg { font-size: 0.8rem; margin-top: 8px; color: #28a745; }
   </style>
 </head>
 <body>
@@ -95,7 +34,6 @@
   <div class="controls-panel">
     <h2>Travel Map Admin</h2>
     
-    <!-- Lock / Unlock Toggle -->
     <div id="auth-section">
       <div class="input-group">
         <input type="password" id="pass-input" placeholder="Enter admin password">
@@ -103,7 +41,6 @@
       <button class="btn" onclick="authenticate()">Unlock Controls</button>
     </div>
 
-    <!-- Protected Add Location Form -->
     <div id="admin-form" class="admin-only">
       <hr style="margin: 12px 0;">
       <div class="input-group">
@@ -118,16 +55,14 @@
         </select>
       </div>
       <button class="btn" onclick="handleAddLocation()">Add Location</button>
-      <button class="btn btn-secondary" onclick="exportHTML()" style="margin-top: 8px;">Export Consolidated File</button>
+      <button class="btn btn-secondary" onclick="exportHTML()" style="margin-top: 8px;">Export File</button>
       <div id="status" class="status-msg"></div>
     </div>
   </div>
 
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    // Initial Dataset
     let VISITED = [
       { name: "Valencia, Spain", lat: 39.4699, lng: -0.3763 },
       { name: "San Diego, CA", lat: 32.7157, lng: -117.1611 },
@@ -138,52 +73,56 @@
       { name: "La Paz, Mexico", lat: 24.1426, lng: -110.3128 }
     ];
 
-    // Load extra data from LocalStorage
     const storedVisited = JSON.parse(localStorage.getItem('custom_visited') || '[]');
     const storedLived = JSON.parse(localStorage.getItem('custom_lived') || '[]');
     
     VISITED = VISITED.concat(storedVisited);
     LIVED = LIVED.concat(storedLived);
 
-    // Initialize Map with OpenStreetMap Standard Tiles (No API key needed)
     const map = L.map('map');
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    // Tile Layers
+    const streetTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+    });
+
+    const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    });
+
+    streetTiles.addTo(map);
+
+    L.control.layers({
+      "Street View": streetTiles,
+      "Dark Mode": darkTiles
     }).addTo(map);
 
-    // Render Markers
+    // Custom SVG Pin Icons
+    const bluePin = L.icon({
+      iconUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23007bff" width="32" height="32"><path d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>',
+      iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32]
+    });
+
+    const redPin = L.icon({
+      iconUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23dc3545" width="32" height="32"><path d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>',
+      iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32]
+    });
+
     const markersGroup = L.layerGroup().addTo(map);
 
     function renderAll() {
       markersGroup.clearLayers();
 
-      // Blue pins for Visited
       VISITED.forEach(loc => {
-        L.circleMarker([loc.lat, loc.lng], {
-          radius: 7,
-          fillColor: "#007bff",
-          color: "#ffffff",
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.8
-        }).bindPopup(`<b>Visited:</b> ${loc.name}`).addTo(markersGroup);
+        L.marker([loc.lat, loc.lng], { icon: bluePin })
+         .bindPopup(`<b>Visited:</b> ${loc.name}`).addTo(markersGroup);
       });
 
-      // Red pins for Lived
       LIVED.forEach(loc => {
-        L.circleMarker([loc.lat, loc.lng], {
-          radius: 8,
-          fillColor: "#dc3545",
-          color: "#ffffff",
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.9
-        }).bindPopup(`<b>Lived:</b> ${loc.name}`).addTo(markersGroup);
+        L.marker([loc.lat, loc.lng], { icon: redPin })
+         .bindPopup(`<b>Lived:</b> ${loc.name}`).addTo(markersGroup);
       });
 
-      // Auto-fit camera bounds around all points
       const allCoords = VISITED.concat(LIVED).map(p => [p.lat, p.lng]);
       if (allCoords.length > 0) {
         map.fitBounds(L.latLngBounds(allCoords), { padding: [50, 50] });
@@ -194,22 +133,19 @@
 
     renderAll();
 
-    // Universal JS Hash (Works on file:// protocol without crypto.subtle context limits)
     function simpleHash(str) {
       let hash = 0;
       for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
+        hash = (hash << 5) - hash + str.charCodeAt(i);
         hash |= 0;
       }
       return hash;
     }
 
-    // Hash value for "bingobango"
     const EXPECTED_HASH = 1664426555;
 
     function authenticate() {
-      const input = document.getElementById('pass-input').value;
+      const input = document.getElementById('pass-input').value.trim().toLowerCase();
       if (simpleHash(input) === EXPECTED_HASH) {
         document.getElementById('auth-section').style.display = 'none';
         document.getElementById('admin-form').style.display = 'block';
@@ -218,21 +154,17 @@
       }
     }
 
-    // Geocoding via Nominatim with required User-Agent header
     async function handleAddLocation() {
       const query = document.getElementById('search-query').value.trim();
       const type = document.getElementById('location-type').value;
       const status = document.getElementById('status');
 
       if (!query) return;
-
-      status.innerText = "Searching coordinates...";
+      status.innerText = "Searching...";
 
       try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`, {
-          headers: {
-            'User-Agent': 'TravelMapApp/1.0'
-          }
+          headers: { 'User-Agent': 'TravelMapApp/1.0' }
         });
         const data = await res.json();
 
@@ -263,11 +195,9 @@
         }
       } catch (err) {
         status.innerText = "Error fetching location.";
-        console.error(err);
       }
     }
 
-    // Self-contained export handler
     function exportHTML() {
       const docString = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
       const blob = new Blob([docString], { type: 'text/html' });
