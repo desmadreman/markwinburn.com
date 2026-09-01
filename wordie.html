@@ -60,6 +60,28 @@
             position: relative;
         }
 
+        .header-left-controls {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+        }
+
+        .home-link {
+            color: var(--color-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.15s ease;
+        }
+
+        .home-link:hover {
+            color: var(--color-text);
+            text-decoration: underline;
+        }
+
         h1 {
             margin: 0;
             font-size: 2.2rem;
@@ -387,6 +409,9 @@
 <body>
 
     <header>
+        <div class="header-left-controls">
+            <a href="index.html" class="home-link">← Home</a>
+        </div>
         <h1>WORDIE</h1>
         <div class="header-right-controls">
             <button class="new-puzzle-trigger" onclick="resetGame()">new puzzle</button>
@@ -403,7 +428,7 @@
         </div>
     </div>
 
-    <div id="toast">Loading dictionary...</div>
+    <div id="toast">Loading dictionaries...</div>
 
     <div id="modal">
         <div class="modal-content" style="text-align:center;">
@@ -474,7 +499,9 @@
     </div>
 
     <script>
-        let WORDS = [];
+        let ANSWERS = [];
+        let GUESSES = [];
+        let ALL_VALID_WORDS = [];
         let targetWord = "";
         let currentRow = 0;
         let currentTile = 0;
@@ -484,17 +511,27 @@
         const grid = document.getElementById("grid");
         const toast = document.getElementById("toast");
 
-        // Fetch dictionary loaded dynamically into memory from dictionary.json
-        async function loadLocalDictionary() {
+        async function loadDictionaries() {
             try {
-                const response = await fetch('./dictionary.json');
-                if (!response.ok) throw new Error("JSON file not found");
-                const data = await response.json();
-                WORDS = data.map(w => w.trim().toUpperCase()).filter(w => w.length === 5);
+                const [answersRes, guessesRes] = await Promise.all([
+                    fetch('./answers.json'),
+                    fetch('./guesses.json')
+                ]);
+
+                if (!answersRes.ok || !guessesRes.ok) throw new Error("Could not load dictionary files");
+
+                ANSWERS = await answersRes.json();
+                GUESSES = await guessesRes.json();
+
+                ANSWERS = ANSWERS.map(w => w.trim().toUpperCase());
+                GUESSES = GUESSES.map(w => w.trim().toUpperCase());
+
+                ALL_VALID_WORDS = Array.from(new Set([...ANSWERS, ...GUESSES]));
+
                 resetGame();
             } catch (err) {
-                showToast("Run via local server to load JSON");
-                console.error("Could not fetch dictionary.json:", err);
+                showToast("Error loading dictionary files");
+                console.error("Failed loading dictionary JSON files:", err);
             }
         }
 
@@ -536,7 +573,7 @@
         }
 
         function handleInput(key) {
-            if (gameOver || WORDS.length === 0) return;
+            if (gameOver || ALL_VALID_WORDS.length === 0) return;
             const cleanKey = key.toLowerCase();
 
             if (cleanKey === "enter") submitGuess();
@@ -563,7 +600,7 @@
         function submitGuess() {
             const guess = guesses[currentRow];
             if (guess.length !== 5) { showToast("Not enough letters"); return; }
-            if (!WORDS.includes(guess)) { showToast("Not in word list"); return; }
+            if (!ALL_VALID_WORDS.includes(guess)) { showToast("Not in word list"); return; }
             evaluateGuess(guess);
         }
 
@@ -618,14 +655,13 @@
         function closeModal() { document.getElementById("modal").style.display = "none"; }
 
         function resetGame() {
-            if (WORDS.length === 0) return;
-            targetWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+            if (ANSWERS.length === 0) return;
+            targetWord = ANSWERS[Math.floor(Math.random() * ANSWERS.length)];
             currentRow = 0; currentTile = 0; gameOver = false;
             guesses = Array(6).fill("");
             closeModal(); initGrid(); initKeyboard();
         }
 
-        /* --- ADVANCED SOLVER ALGORITHM --- */
         function openSolver() {
             syncSolverFromBoard();
             document.getElementById("solver-modal").style.display = "flex";
@@ -668,8 +704,7 @@
             const absentLetters = document.getElementById("solver-absent-letters").value.toUpperCase().split("");
             const allYellows = excludeInputs.join("").split("");
 
-            // 1. Filter Possible Solutions
-            const solutions = WORDS.filter(w => {
+            const solutions = ANSWERS.filter(w => {
                 for (let i = 0; i < 5; i++) {
                     if (correctInputs[i] && w[i] !== correctInputs[i]) return false;
                 }
@@ -685,10 +720,8 @@
                 return true;
             });
 
-            // Update Summary
             document.getElementById("solver-summary").textContent = `${solutions.length} Possible Solutions Remaining`;
 
-            // Populate Possible Solutions Box
             const solutionsList = document.getElementById("solver-possible-answers");
             solutionsList.innerHTML = "";
             solutions.slice(0, 10).forEach(w => {
@@ -698,14 +731,16 @@
                 solutionsList.appendChild(li);
             });
 
-            // 2. Compute Best Next Words (Eliminators based on unique unrevealed letter coverage)
+            if (solutions.length === 0) {
+                solutionsList.innerHTML = `<li class="solver-results-item" style="color: var(--color-muted);">No solutions match</li>`;
+            }
+
             const eliminatorsList = document.getElementById("solver-best-eliminators");
             eliminatorsList.innerHTML = "";
 
             if (solutions.length <= 2) {
                 eliminatorsList.innerHTML = `<li class="solver-results-item" style="color: var(--color-muted);">Guess directly!</li>`;
             } else {
-                // Find uncalculated letter frequencies across remaining solution space
                 let letterFreq = {};
                 solutions.forEach(w => {
                     new Set(w.split("")).forEach(char => {
@@ -713,8 +748,7 @@
                     });
                 });
 
-                // Score full dictionary words by how efficiently they divide the remaining search space
-                let scoredWords = WORDS.map(w => {
+                let scoredWords = ALL_VALID_WORDS.map(w => {
                     let uniqueChars = new Set(w.split(""));
                     let score = 0;
                     uniqueChars.forEach(char => {
@@ -745,7 +779,7 @@
             else if (/^[a-zA-Z]$/.test(e.key)) handleInput(e.key);
         });
 
-        loadLocalDictionary();
+        loadDictionaries();
     </script>
 </body>
 </html>
