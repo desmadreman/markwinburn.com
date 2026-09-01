@@ -67,7 +67,7 @@
         .header-left-controls, .header-right-controls {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             min-width: 110px;
         }
 
@@ -98,11 +98,11 @@
             flex-grow: 1;
         }
 
-        .new-puzzle-trigger, .solver-trigger {
+        .header-btn {
             background: none;
             border: none;
             color: var(--color-muted);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             transition: color 0.15s ease;
@@ -111,7 +111,7 @@
             white-space: nowrap;
         }
 
-        .new-puzzle-trigger:hover, .solver-trigger:hover {
+        .header-btn:hover {
             text-decoration: underline;
             color: var(--color-text);
         }
@@ -303,16 +303,6 @@
             outline: none;
         }
 
-        .solver-results-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-gap: 12px;
-        }
-
-        @media (max-width: 480px) {
-            .solver-results-container { grid-template-columns: 1fr; }
-        }
-
         .solver-results-box {
             background-color: var(--color-bg);
             border: 1px solid var(--color-tile-border);
@@ -413,8 +403,9 @@
         </div>
         <h1>WORDIE</h1>
         <div class="header-right-controls">
-            <button class="new-puzzle-trigger" onclick="resetGame()">new puzzle</button>
-            <button class="solver-trigger" onclick="openSolver()">solver</button>
+            <button class="header-btn" onclick="resetGame()">new puzzle</button>
+            <button class="header-btn" onclick="openSolverMode('eliminators')">eliminators</button>
+            <button class="header-btn" onclick="openSolverMode('solutions')">solutions</button>
         </div>
     </header>
 
@@ -446,7 +437,7 @@
     <div id="solver-modal">
         <div class="solver-modal-content">
             <div class="solver-header">
-                <h2>WORDIE ASSISTANT</h2>
+                <h2 id="solver-title">ELIMINATORS</h2>
                 <button class="solver-close-btn" onclick="closeSolver()">&times;</button>
             </div>
 
@@ -479,15 +470,16 @@
                 <input type="text" id="solver-absent-letters" class="solver-text-box-input" placeholder="e.g. AEIO">
             </div>
 
-            <div class="solver-results-container">
-                <div class="solver-results-box">
-                    <div class="solver-section-title" style="color: var(--color-correct);">Most Probable Solutions</div>
-                    <ul id="solver-possible-answers" class="solver-results-list"></ul>
-                </div>
-                <div class="solver-results-box">
-                    <div class="solver-section-title" style="color: var(--theme-accent);">Best Next Eliminator Words</div>
-                    <ul id="solver-best-eliminators" class="solver-results-list"></ul>
-                </div>
+            <!-- View 1: Eliminators Results Box -->
+            <div id="view-eliminators-box" class="solver-results-box" style="display: none;">
+                <div class="solver-section-title" style="color: var(--theme-accent);">Best Next Eliminator Words</div>
+                <ul id="solver-best-eliminators" class="solver-results-list"></ul>
+            </div>
+
+            <!-- View 2: Solutions Results Box -->
+            <div id="view-solutions-box" class="solver-results-box" style="display: none;">
+                <div class="solver-section-title" style="color: var(--color-correct);">Most Probable Solutions</div>
+                <ul id="solver-possible-answers" class="solver-results-list"></ul>
             </div>
 
             <div class="solver-btn-row">
@@ -506,6 +498,7 @@
         let currentTile = 0;
         let gameOver = false;
         let guesses = Array(6).fill("");
+        let activeSolverMode = "eliminators";
 
         const grid = document.getElementById("grid");
         const toast = document.getElementById("toast");
@@ -661,7 +654,22 @@
             closeModal(); initGrid(); initKeyboard();
         }
 
-        function openSolver() {
+        function openSolverMode(mode) {
+            activeSolverMode = mode;
+            const titleElem = document.getElementById("solver-title");
+            const eliminatorsBox = document.getElementById("view-eliminators-box");
+            const solutionsBox = document.getElementById("view-solutions-box");
+
+            if (mode === "eliminators") {
+                titleElem.textContent = "ELIMINATORS ASSISTANT";
+                eliminatorsBox.style.display = "block";
+                solutionsBox.style.display = "none";
+            } else {
+                titleElem.textContent = "SOLUTIONS ASSISTANT";
+                eliminatorsBox.style.display = "none";
+                solutionsBox.style.display = "block";
+            }
+
             syncSolverFromBoard();
             document.getElementById("solver-modal").style.display = "flex";
         }
@@ -721,49 +729,51 @@
 
             document.getElementById("solver-summary").textContent = `${solutions.length} Possible Solutions Remaining`;
 
-            const solutionsList = document.getElementById("solver-possible-answers");
-            solutionsList.innerHTML = "";
-            solutions.slice(0, 10).forEach(w => {
-                const li = document.createElement("li");
-                li.className = "solver-results-item";
-                li.textContent = w;
-                solutionsList.appendChild(li);
-            });
-
-            if (solutions.length === 0) {
-                solutionsList.innerHTML = `<li class="solver-results-item" style="color: var(--color-muted);">No solutions match</li>`;
-            }
-
-            const eliminatorsList = document.getElementById("solver-best-eliminators");
-            eliminatorsList.innerHTML = "";
-
-            if (solutions.length <= 2) {
-                eliminatorsList.innerHTML = `<li class="solver-results-item" style="color: var(--color-muted);">Guess directly!</li>`;
-            } else {
-                let letterFreq = {};
-                solutions.forEach(w => {
-                    new Set(w.split("")).forEach(char => {
-                        letterFreq[char] = (letterFreq[char] || 0) + 1;
-                    });
-                });
-
-                let scoredWords = ALL_VALID_WORDS.map(w => {
-                    let uniqueChars = new Set(w.split(""));
-                    let score = 0;
-                    uniqueChars.forEach(char => {
-                        if (letterFreq[char]) score += letterFreq[char];
-                    });
-                    return { word: w, score: score };
-                });
-
-                scoredWords.sort((a, b) => b.score - a.score);
-
-                scoredWords.slice(0, 5).forEach(item => {
+            if (activeSolverMode === "solutions") {
+                const solutionsList = document.getElementById("solver-possible-answers");
+                solutionsList.innerHTML = "";
+                solutions.slice(0, 10).forEach(w => {
                     const li = document.createElement("li");
                     li.className = "solver-results-item";
-                    li.innerHTML = `<span>${item.word}</span> <span style="font-size:0.75rem; color:var(--color-muted);">${item.score} pts</span>`;
-                    eliminatorsList.appendChild(li);
+                    li.textContent = w;
+                    solutionsList.appendChild(li);
                 });
+
+                if (solutions.length === 0) {
+                    solutionsList.innerHTML = `<li class="solver-results-item" style="color: var(--color-muted);">No solutions match</li>`;
+                }
+            } else if (activeSolverMode === "eliminators") {
+                const eliminatorsList = document.getElementById("solver-best-eliminators");
+                eliminatorsList.innerHTML = "";
+
+                if (solutions.length <= 2) {
+                    eliminatorsList.innerHTML = `<li class="solver-results-item" style="color: var(--color-muted);">Guess directly!</li>`;
+                } else {
+                    let letterFreq = {};
+                    solutions.forEach(w => {
+                        new Set(w.split("")).forEach(char => {
+                            letterFreq[char] = (letterFreq[char] || 0) + 1;
+                        });
+                    });
+
+                    let scoredWords = ALL_VALID_WORDS.map(w => {
+                        let uniqueChars = new Set(w.split(""));
+                        let score = 0;
+                        uniqueChars.forEach(char => {
+                            if (letterFreq[char]) score += letterFreq[char];
+                        });
+                        return { word: w, score: score };
+                    });
+
+                    scoredWords.sort((a, b) => b.score - a.score);
+
+                    scoredWords.slice(0, 5).forEach(item => {
+                        const li = document.createElement("li");
+                        li.className = "solver-results-item";
+                        li.innerHTML = `<span>${item.word}</span> <span style="font-size:0.75rem; color:var(--color-muted);">${item.score} pts</span>`;
+                        eliminatorsList.appendChild(li);
+                    });
+                }
             }
         }
 
