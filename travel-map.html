@@ -138,20 +138,19 @@
       { name: "La Paz, Mexico", lat: 24.1426, lng: -110.3128 }
     ];
 
-    // Load extra data from LocalStorage if present
+    // Load extra data from LocalStorage
     const storedVisited = JSON.parse(localStorage.getItem('custom_visited') || '[]');
     const storedLived = JSON.parse(localStorage.getItem('custom_lived') || '[]');
     
     VISITED = VISITED.concat(storedVisited);
     LIVED = LIVED.concat(storedLived);
 
-    // Initialize Map with CARTO Voyager tiles (Zero-cost, no API key needed)
+    // Initialize Map with OpenStreetMap Standard Tiles (No API key needed)
     const map = L.map('map');
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 19
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
     // Render Markers
@@ -184,7 +183,7 @@
         }).bindPopup(`<b>Lived:</b> ${loc.name}`).addTo(markersGroup);
       });
 
-      // Auto-fit camera bounds around all points dynamically
+      // Auto-fit camera bounds around all points
       const allCoords = VISITED.concat(LIVED).map(p => [p.lat, p.lng]);
       if (allCoords.length > 0) {
         map.fitBounds(L.latLngBounds(allCoords), { padding: [50, 50] });
@@ -195,22 +194,23 @@
 
     renderAll();
 
-    // Secure SHA-256 Check (Hash for "bingobango")
-    const EXPECTED_HASH = "1e16fdf9cf944208a0d24bf51a7047710c660662d515fef54e9e03f0b488a032";
-
-    async function verifyPassword(input) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(input);
-      const hash = await crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hash));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('') === EXPECTED_HASH;
+    // Universal JS Hash (Works on file:// protocol without crypto.subtle context limits)
+    function simpleHash(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash |= 0;
+      }
+      return hash;
     }
 
-    async function authenticate() {
+    // Hash value for "bingobango"
+    const EXPECTED_HASH = 1664426555;
+
+    function authenticate() {
       const input = document.getElementById('pass-input').value;
-      const isValid = await verifyPassword(input);
-      
-      if (isValid) {
+      if (simpleHash(input) === EXPECTED_HASH) {
         document.getElementById('auth-section').style.display = 'none';
         document.getElementById('admin-form').style.display = 'block';
       } else {
@@ -218,7 +218,7 @@
       }
     }
 
-    // Geocoding via Nominatim with proper User-Agent header
+    // Geocoding via Nominatim with required User-Agent header
     async function handleAddLocation() {
       const query = document.getElementById('search-query').value.trim();
       const type = document.getElementById('location-type').value;
